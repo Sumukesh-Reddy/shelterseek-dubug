@@ -322,3 +322,309 @@
   }
 }
 
+
+/* Manager Login Specific Styles */
+.manager-login {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+.manager-card {
+  border-top: 4px solid #8b5cf6;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.manager-card::before {
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
+}
+
+.manager-steps .step.active {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.manager-steps .step {
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 30px;
+  background: #f1f5f9;
+  transition: all 0.3s ease;
+}
+
+.manager-steps .step .step-number {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  font-size: 0.9rem;
+}
+
+.manager-steps .step .step-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.manager-button {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+}
+
+.manager-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4) !important;
+}
+
+/* Enhanced Form Styles */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px;
+  color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #8b5cf6;
+}
+
+.form-hint {
+  margin-top: 8px;
+  text-align: right;
+}
+
+.label-icon {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+.button-icon {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+/* OTP Enhancements */
+.otp-info {
+  margin-top: 12px;
+  padding: 10px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #475569;
+  text-align: center;
+}
+
+.otp-info strong {
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
+.manager-otp {
+  border-color: #e2e8f0;
+  background: white;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.manager-otp:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.timer-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.timer-icon {
+  font-size: 1.1rem;
+}
+
+.resend-icon {
+  margin-right: 8px;
+  font-size: 1.1rem;
+  display: inline-block;
+}
+
+.resend-link:hover .resend-icon {
+  transform: rotate(180deg);
+  transition: transform 0.5s ease;
+}
+
+/* Manager Info Box */
+.manager-info {
+  margin-top: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border-radius: 12px;
+  border-left: 4px solid #8b5cf6;
+}
+
+.info-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-icon {
+  font-size: 1.2rem;
+}
+
+/* Footer Enhancements */
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.separator {
+  color: #cbd5e1;
+}
+
+.footer-note {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.link-icon {
+  margin-right: 4px;
+  font-size: 1rem;
+}
+
+/* Loading Spinner Enhancement */
+.loading-spinner {
+  margin-right: 8px;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 480px) {
+  .manager-steps .step {
+    min-width: auto;
+    padding: 6px 12px;
+  }
+  
+  .manager-steps .step .step-label {
+    display: none;
+  }
+  
+  .manager-steps .step .step-number {
+    width: 28px;
+    height: 28px;
+    margin: 0;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .separator {
+    display: none;
+  }
+  
+  .otp-info {
+    font-size: 0.8rem;
+  }
+}
+
+/* Animation for OTP inputs */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.otp-input:focus {
+  animation: pulse 0.3s ease;
+}
+
+/* Success/Error Message Enhancements */
+.error-message, .success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-icon, .success-icon {
+  font-size: 1.2rem;
+}
+
+/* Manager Dashboard Preview (optional) */
+.manager-preview {
+  margin-top: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+}
+
+.preview-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.preview-item {
+  text-align: center;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.preview-item .preview-icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.preview-item .preview-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .preview-items {
+    grid-template-columns: 1fr;
+  }
+}

@@ -91,7 +91,18 @@ const roleMiddleware = {
 
     next();
   },
+    
+    managerOnly: (req, res, next) => {
+      if (!isRequestAuthenticated(req)) {
+        return res.status(401).json({ success: false, message: 'Authentication required' });
+      }
 
+      if (!req.user || req.user.accountType !== 'manager') {
+        return res.status(403).json({ success: false, message: 'Access denied: Manager only' });
+      }
+
+      next();
+    },
   authenticated: (req, res, next) => {
     if (!isRequestAuthenticated(req)) {
       return res.status(401).json({ success: false, message: 'Authentication required' });

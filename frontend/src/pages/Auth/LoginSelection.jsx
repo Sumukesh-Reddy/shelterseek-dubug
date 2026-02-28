@@ -36,7 +36,16 @@ const LoginSelection = () => {
             </div>
             <div className="option-arrow">→</div>
           </Link>
-
+          <Link to="/manager-login" className="selection-option manager-option">
+            <div className="option-icon">⚙️</div>
+            <div className="option-content">
+              <h3 className="option-title">Manager Login</h3>
+              <p className="option-description">
+                Access manager dashboard to oversee operations, manage bookings, and monitor performance
+              </p>
+            </div>
+            <div className="option-arrow">→</div>
+          </Link>
           <Link to="/admin-login" className="selection-option admin-option">
             <div className="option-icon">⚙️</div>
             <div className="option-content">

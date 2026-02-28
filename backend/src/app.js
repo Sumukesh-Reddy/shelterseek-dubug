@@ -23,6 +23,7 @@ const chatRoutes = require('./routes/chatRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const aiChatRoutes = require('./routes/aiChatRoutes');
 const imageRoutes = require('./routes/imageRoutes');
+const managerRoutes = require('./routes/managerRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -192,6 +193,9 @@ app.get('/api/recent-activities', (req, res) => {
 app.get('/api/revenue', (req, res) => {
   res.json({ success: true, totalRevenue: 0, thisMonthRevenue: 0, thisWeekRevenue: 0 });
 });
+
+app.use('/api/managers', managerRoutes);
+app.use('/auth/manager', managerRoutes); 
 
 // Global error handler
 app.use(globalErrorHandler);

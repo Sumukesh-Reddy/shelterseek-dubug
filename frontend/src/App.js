@@ -42,6 +42,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminManagerRegister from './pages/AdminManagerRegister/AdmminManagerRegister';
+import ManagerLogin from './pages/Auth/ManagerLogin';
+
 
 function App() {
   return (
@@ -69,6 +71,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/traveler-login" element={<TravelerLogin />} />
             <Route path="/host-login" element={<HostLogin />} />
+            <Route path="/manager-login" element={<ManagerLogin />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/payment" element={<Payment />} />
@@ -209,6 +212,7 @@ function App() {
               }
             />
 
+            
           </Routes>
         </Router>
       </AuthProvider>

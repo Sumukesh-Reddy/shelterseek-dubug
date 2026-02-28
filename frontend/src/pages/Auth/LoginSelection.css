@@ -188,3 +188,11 @@
   .admin-option:hover .option-arrow {
     color: #6b7280;
   }
+  .manager-option:hover {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05));
+  }
+  
+  .manager-option:hover .option-arrow {
+    color: #8b5cf6;
+  }

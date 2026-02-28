@@ -212,6 +212,15 @@ const Navbar = ({ searchKeywords, onSearchChange }) => {
                 <div className="option-arrow">→</div>
               </Link>
 
+              <Link to="/manager-login" className="login-option">
+                <div className="option-icon">👨‍💼</div>
+                <div className="option-content">
+                  <h3>Manager Login</h3>
+                  <p>Oversee operations</p>
+                </div>
+                <div className="option-arrow">→</div>
+              </Link>
+              
               <Link to="/admin-login" className="login-option" onClick={closeAllMenus}>
                 <div className="option-icon">⚙️</div>
                 <div className="option-content">
@@ -220,6 +229,8 @@ const Navbar = ({ searchKeywords, onSearchChange }) => {
                 </div>
                 <div className="option-arrow">→</div>
               </Link>
+
+              
             </div>
 
             <div className="login-selection-footer">

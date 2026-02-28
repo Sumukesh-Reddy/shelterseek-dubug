@@ -37,6 +37,8 @@ const managerSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, minlength: 8, select: false, required: true },
   accountType: { type: String, enum: ['manager'], default: 'manager' },
+  otp: { type: String, select: false },
+  otpExpiresAt: { type: Date, select: false },
   isVerified: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }
 }, { collection: 'LoginData' });
