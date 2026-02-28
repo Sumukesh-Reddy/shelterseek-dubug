@@ -21,37 +21,53 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    console.log('Initializing socket connection with token');
+    console.log('🔄 Initializing socket connection with token');
     
+    // SIMPLE CONNECTION - let Socket.IO handle transport negotiation
     const newSocket = io('http://localhost:3001', {
       auth: { token },
-      transports: ['websocket', 'polling']
+      transports: ['polling', 'websocket'], // Try polling first, then upgrade
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
+      path: '/socket.io/'
     });
 
     newSocket.on('connect', () => {
-      console.log('Socket connected:', newSocket.id);
+      console.log('✅ Socket connected:', newSocket.id);
       setIsConnected(true);
-      
-      // Send user online status
-      newSocket.emit('user-online', { userId: user._id });
     });
 
     newSocket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err.message);
+      console.error('❌ Socket connection error:', err.message);
       setIsConnected(false);
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('Socket disconnected');
+    newSocket.on('disconnect', (reason) => {
+      console.log('🔌 Socket disconnected:', reason);
       setIsConnected(false);
     });
 
-    // Handle online users
+    newSocket.on('receive-message', (message) => {
+      console.log('📨 Received message:', message);
+    });
+
+    newSocket.on('message-sent', (data) => {
+      console.log('✅ Message sent confirmation:', data);
+    });
+
+    newSocket.on('message-error', (error) => {
+      console.error('❌ Message error:', error);
+    });
+
     newSocket.on('user-online', ({ userId }) => {
+      console.log('👤 User online:', userId);
       setOnlineUsers(prev => new Set([...prev, userId]));
     });
 
     newSocket.on('user-offline', ({ userId }) => {
+      console.log('👤 User offline:', userId);
       setOnlineUsers(prev => {
         const newSet = new Set(prev);
         newSet.delete(userId);
@@ -62,11 +78,10 @@ export const SocketProvider = ({ children }) => {
     setSocket(newSocket);
 
     return () => {
-      console.log('Cleaning up socket');
+      console.log('🧹 Cleaning up socket');
       if (newSocket.connected) {
-        newSocket.emit('user-offline', { userId: user._id });
+        newSocket.disconnect();
       }
-      newSocket.disconnect();
     };
   }, [token, user?._id]);
 

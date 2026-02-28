@@ -71,73 +71,6 @@ const ChatPage = () => {
     fetchChatRooms();
   }, [fetchChatRooms]);
 
-  // Polling for new messages
-  const startPolling = useCallback(() => {
-    // Clear existing interval
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-    }
-    
-    // Only start polling if we have a selected room
-    if (!selectedRoom?._id) return;
-    
-    console.log('Starting polling for room:', selectedRoom._id);
-    
-    // Poll every 3 seconds for new messages
-    pollingIntervalRef.current = setInterval(async () => {
-      try {
-        const response = await api.get(`/chat/messages/${selectedRoom._id}`);
-        const newMessages = response.data.messages || [];
-        
-        // Check if messages have actually changed
-        const lastFetch = lastMessageFetchRef.current[selectedRoom._id];
-        const currentLastMessage = newMessages[newMessages.length - 1];
-        
-        if (!lastFetch || 
-            !lastFetch._id || 
-            lastFetch._id !== currentLastMessage?._id ||
-            lastFetch.content !== currentLastMessage?.content) {
-          
-          console.log('Polling detected new messages:', currentLastMessage?._id);
-          setMessages(newMessages);
-          
-          // Update last fetch reference
-          if (currentLastMessage) {
-            lastMessageFetchRef.current[selectedRoom._id] = {
-              _id: currentLastMessage._id,
-              content: currentLastMessage.content,
-              timestamp: Date.now()
-            };
-          }
-        }
-        
-        // Also refresh rooms list periodically (every 30 seconds)
-        if (Date.now() - (lastMessageFetchRef.current.lastRoomFetch || 0) > 30000) {
-          fetchChatRooms();
-          lastMessageFetchRef.current.lastRoomFetch = Date.now();
-        }
-        
-      } catch (error) {
-        console.error('Polling error:', error);
-        // Don't stop polling on occasional errors
-      }
-    }, 3000); // Poll every 3 seconds
-  }, [selectedRoom?._id, fetchChatRooms]);
-
-  // Start/stop polling based on selected room
-  useEffect(() => {
-    if (selectedRoom?._id) {
-      startPolling();
-    }
-    
-    return () => {
-      if (pollingIntervalRef.current) {
-        console.log('Clearing polling interval');
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-    };
-  }, [selectedRoom?._id, startPolling]);
 
   // Handle starting/opening a chat from navigation state
   useEffect(() => {
@@ -219,8 +152,7 @@ const ChatPage = () => {
 
     console.log('Setting up socket listeners for user:', user._id);
 
-    // Join user's personal room
-    socket.emit('join-user', user._id);
+    
 
     const handleIncomingMessage = (message) => {
       console.log('Received message via socket:', {
@@ -354,16 +286,13 @@ const ChatPage = () => {
     // Handle connection issues
     socket.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
-      // Ensure polling is active when socket fails
-      if (selectedRoom?._id && !pollingIntervalRef.current) {
-        startPolling();
-      }
+     
     });
 
     socket.on('connect', () => {
       console.log('Socket connected, rejoining rooms');
-      // Rejoin user room on reconnect
-      socket.emit('join-user', user._id);
+      
+      
       if (selectedRoom?._id) {
         socket.emit('join-room', selectedRoom._id);
       }
@@ -382,7 +311,7 @@ const ChatPage = () => {
       // Leave user room
       socket.emit('leave-user', user._id);
     };
-  }, [socket, user?._id, selectedRoom, fetchChatRooms, startPolling]);
+  }, [socket, user?._id, selectedRoom, fetchChatRooms]);
 
   const fetchMessages = async (roomId) => {
     try {
@@ -402,7 +331,7 @@ const ChatPage = () => {
       
       // Mark messages as read
       if (socket) {
-        socket.emit('messages-read', { roomId });
+        socket.emit('mark-read', { roomId });
       }
       
       console.log('Fetched messages for room:', roomId, 'count:', fetchedMessages.length);

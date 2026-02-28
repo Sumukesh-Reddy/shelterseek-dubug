@@ -1,6 +1,7 @@
 // contexts/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -10,52 +11,47 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
 
-      
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        const normalizedUser = {
-          ...parsedUser,
-          _id: parsedUser._id || parsedUser.id, 
-        };
-        setUser(normalizedUser);
-      } catch {
-        
-        setUser(null);
-      }
-      
-      // Set default auth header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+useEffect(() => {
+  const storedToken = localStorage.getItem('token');
+  const storedUser = localStorage.getItem('user');
+  
+  if (storedToken && storedUser) {
+    setToken(storedToken);
+    
+    // ✅ ADD THIS LINE - Set default Authorization header for all axios requests
+    axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+    
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      const normalizedUser = {
+        ...parsedUser,
+        _id: parsedUser._id || parsedUser.id, 
+      };
+      setUser(normalizedUser);
+    } catch {
+      setUser(null);
     }
-    setLoading(false);
-  }, []);
+  }
+  setLoading(false);
+}, []);
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:3001/login', {
+      const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, {
         email,
         password
       });
 
       if (response.data.success) {
         const { token, user } = response.data;
-        // Ensure user has a consistent `_id` field
         const normalizedUser = {
           ...user,
           _id: user._id || user.id,
         };
         
-        // Store in localStorage
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(normalizedUser));
-        
-        // Set axios default header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         setToken(token);
@@ -80,8 +76,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     sessionStorage.removeItem('currentUser');
     delete axios.defaults.headers.common['Authorization'];
-    
   };
+
   const value = {
     user,
     token,

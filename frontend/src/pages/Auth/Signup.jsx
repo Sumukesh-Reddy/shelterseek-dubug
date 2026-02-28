@@ -59,7 +59,7 @@ const Signup = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3001/send-otp', {
+      const res = await fetch('http://localhost:3001/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -89,7 +89,7 @@ const Signup = () => {
     setError('');
     try {
       // Verify OTP first
-      const otpRes = await fetch('http://localhost:3001/verify-otp', {
+      const otpRes = await fetch('http://localhost:3001/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: otpString })
@@ -100,7 +100,7 @@ const Signup = () => {
       }
 
       // Then create account
-      const signupRes = await fetch('http://localhost:3001/signup', {
+      const signupRes = await fetch('http://localhost:3001/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, accountType })

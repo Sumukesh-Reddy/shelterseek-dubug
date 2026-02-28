@@ -1,0 +1,289 @@
+const Room = require('../models/Room');
+const { Traveler, Host } = require('../models/User');
+const Booking = require('../models/Booking');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
+const jwt = require('jsonwebtoken');
+const { replicateToTravelerDB } = require('../services/replicationService');
+
+// Get all rooms with filtering
+exports.getAllRooms = catchAsync(async (req, res) => {
+  let userId = null;
+  const token = req.headers['authorization']?.split(' ')[1];
+  
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'myjwtsecret');
+      const user = await Traveler.findById(decoded.id) || await Host.findById(decoded.id);
+      if (user) userId = user._id.toString();
+    } catch (err) {
+      console.log('Invalid token:', err.message);
+    }
+  }
+
+  let query = {
+    $or: [{ status: /verified/i }, { status: /approved/i }]
+  };
+
+  if (!userId) {
+    query.booking = { $ne: true };
+  } else {
+    query = {
+      $and: [
+        { $or: [{ status: /verified/i }, { status: /approved/i }] },
+        {
+          $or: [
+            { booking: { $ne: true } },
+            { bookedBy: userId }
+          ]
+        }
+      ]
+    };
+    
+    const user = await Traveler.findById(userId) || await Host.findById(userId);
+    if (user && user.accountType === 'host') {
+      query = {
+        $or: [
+          { email: user.email },
+          {
+            $and: [
+              { $or: [{ status: /verified/i }, { status: /approved/i }] },
+              {
+                $or: [
+                  { booking: { $ne: true } },
+                  { bookedBy: userId }
+                ]
+              }
+            ]
+          }
+        ]
+      };
+    }
+  }
+
+  const rooms = await Room.find(query).lean();
+
+  const processed = await Promise.all(rooms.map(async (room) => {
+    const images = room.images?.map(img => {
+      if (typeof img === 'object' && img.$oid) {
+        return `/api/images/${img.$oid}`;
+      }
+      return img;
+    }) || [];
+
+    const coordinates = room.coordinates || { lat: 13.0827, lng: 80.2707 };
+
+    const unavailableDates = room.unavailableDates?.map(date => {
+      if (date?.$date) {
+        return new Date(date.$date).toISOString().split('T')[0];
+      }
+      return date instanceof Date ? date.toISOString().split('T')[0] : date;
+    }) || [];
+
+    // Get host info
+    let hostEmail = room.email || '';
+    let hostGender = room.hostGender || '';
+    let hostImage = room.hostImage || null;
+    
+    if (!hostEmail && room.name) {
+      const hostByName = await Host.findOne({ name: room.name })
+        .select('email profilePhoto').lean();
+      if (hostByName) {
+        hostEmail = hostEmail || hostByName.email || '';
+        hostImage = hostImage || hostByName.profilePhoto || null;
+      }
+    }
+
+    return {
+      _id: room._id?.toString(),
+      id: room._id?.toString(),
+      name: room.name || 'Unknown',
+      title: room.title || 'Untitled',
+      description: room.description || '',
+      price: room.price || 0,
+      location: room.location || '',
+      coordinates,
+      roomLocation: room.roomLocation || '',
+      transportDistance: room.transportDistance || '',
+      images,
+      amenities: room.amenities || [],
+      unavailableDates,
+      propertyType: room.propertyType || '',
+      capacity: room.capacity || 0,
+      roomType: room.roomType || '',
+      bedrooms: room.bedrooms || 0,
+      beds: room.beds || 0,
+      roomSize: room.roomSize || 'Medium',
+      foodFacility: room.foodFacility || '',
+      discount: room.discount || 0,
+      maxdays: room.maxdays || 10,
+      likes: room.likes || 0,
+      reviews: room.reviews || [],
+      booking: room.booking || false,
+      bookedBy: room.bookedBy || null,
+      isBookedByMe: userId ? room.bookedBy?.toString() === userId : false,
+      status: room.status || 'pending',
+      createdAt: room.createdAt,
+      updatedAt: room.updatedAt,
+      email: hostEmail,
+      hostGender,
+      hostImage,
+      yearsWithUs: room.yearsWithUs || 0
+    };
+  }));
+
+  res.json({
+    status: 'success',
+    count: processed.length,
+    data: processed
+  });
+});
+
+// Get room by ID
+exports.getRoomById = catchAsync(async (req, res, next) => {
+  const room = await Room.findById(req.params.id);
+  
+  if (!room) {
+    return next(new AppError('Room not found', 404));
+  }
+
+  res.json({
+    success: true,
+    data: { room }
+  });
+});
+
+// Get rooms by host email
+exports.getRoomsByHostEmail = catchAsync(async (req, res) => {
+  const { email } = req.params;
+  const rooms = await Room.find({ email }).lean();
+  res.json({ roomCount: rooms.length, rooms });
+});
+
+// Get room counts and stats
+exports.getRoomCounts = catchAsync(async (req, res) => {
+  const totalRooms = await Room.countDocuments({
+    $or: [{ status: /verified/i }, { status: /approved/i }]
+  });
+
+  const availableRooms = await Room.countDocuments({
+    $or: [{ status: /verified/i }, { status: /approved/i }],
+    booking: { $ne: true }
+  });
+
+  const totalBookedRooms = await Booking.countDocuments({
+    bookingStatus: /confirmed/i
+  });
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay() + 1);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const thisMonthBooked = await Booking.countDocuments({
+    bookingStatus: /confirmed/i,
+    checkIn: { $gte: startOfMonth }
+  });
+
+  const thisWeekBooked = await Booking.countDocuments({
+    bookingStatus: /confirmed/i,
+    checkIn: { $gte: startOfWeek }
+  });
+
+  const roomsByStatus = await Room.aggregate([
+    { $group: { _id: "$status", count: { $sum: 1 } } }
+  ]);
+
+  const popularRoomTypes = await Room.aggregate([
+    { $match: { $or: [{ status: /verified/i }, { status: /approved/i }] } },
+    { $group: { _id: "$roomType", count: { $sum: 1 }, avgPrice: { $avg: "$price" } } },
+    { $sort: { count: -1 } },
+    { $limit: 5 }
+  ]);
+
+  res.json({
+    success: true,
+    counts: {
+      total: totalRooms,
+      available: availableRooms,
+      booked: totalBookedRooms,
+      thisMonthBooked,
+      thisWeekBooked
+    },
+    byStatus: roomsByStatus,
+    popularTypes: popularRoomTypes,
+    lastUpdated: new Date().toISOString()
+  });
+});
+
+// Update room booking status
+exports.updateRoomBooking = catchAsync(async (req, res, next) => {
+  const { booking = true } = req.body;
+  const room = await Room.findById(req.params.roomId);
+  
+  if (!room) {
+    return next(new AppError('Room not found', 404));
+  }
+
+  room.booking = booking;
+  await room.save();
+
+  res.json({ 
+    success: true, 
+    message: `Room ${booking ? 'booked' : 'freed'}`, 
+    room: { _id: room._id, booking: room.booking } 
+  });
+});
+
+// Update listing status (admin/host)
+exports.updateListingStatus = catchAsync(async (req, res) => {
+  const { listingId } = req.params;
+  const { status } = req.body;
+  
+  if (!listingId || !status) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Listing ID and status are required' 
+    });
+  }
+
+  const statusMap = {
+    'pending': 'pending',
+    'Approved': 'verified',
+    'Rejected': 'rejected',
+    'verified': 'verified',
+    'rejected': 'rejected',
+    'approved': 'verified'
+  };
+  
+  const mappedStatus = statusMap[status] || status;
+
+  const room = await Room.findByIdAndUpdate(
+    listingId,
+    { status: mappedStatus },
+    { new: true }
+  );
+
+  if (!room) {
+    return res.status(404).json({ 
+      success: false, 
+      message: 'Listing not found' 
+    });
+  }
+
+  // Replicate to traveler DB if status is verified
+  if (mappedStatus === 'verified') {
+    await replicateToTravelerDB(room);
+  }
+
+  res.json({
+    success: true,
+    message: `Listing ${mappedStatus === 'verified' ? 'approved' : mappedStatus === 'rejected' ? 'rejected' : 'updated'} successfully`,
+    data: { 
+      listing: room,
+      _id: room._id,
+      status: room.status
+    }
+  });
+});

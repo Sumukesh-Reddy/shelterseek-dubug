@@ -255,7 +255,7 @@ const HostIndex = () => {
 
   const fetchListing = async (id) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/listings/${id}`);
+      const res = await axios.get(`${API_BASE_URL}/api/rooms/listings/${id}`);
       const l = res.data.data.listing;
       
       setFormData({
@@ -402,8 +402,8 @@ const HostIndex = () => {
 
     try {
       const url = listingId 
-        ? `${API_BASE_URL}/api/listings/${listingId}` 
-        : `${API_BASE_URL}/api/listings`;
+        ? `${API_BASE_URL}/api/rooms/listings/${listingId}` 
+        : `${API_BASE_URL}/api/rooms/listings`;
       
       const method = listingId ? 'put' : 'post';
       

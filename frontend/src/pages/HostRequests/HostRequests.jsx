@@ -24,7 +24,7 @@ export default function HostRequests() {
       try {
         setLoading(true);
         setError('');
-        const url = `${API_BASE}/api/listings`;
+        const url = `${API_BASE}/api/rooms/listings`;
 
         console.log('Fetching listings from:', url);
         const response = await fetch(url);
@@ -107,7 +107,7 @@ const updateStatus = async (listingId, nextStatus) => {
     const backendStatus = statusMap[nextStatus] || 'pending';
     
     // Try PUT first
-    let response = await fetch(`${API_BASE}/api/listings/${listingId}/status`, {
+    let response = await fetch(`${API_BASE}/api/rooms/listings/${listingId}/status`, {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json'
@@ -119,7 +119,7 @@ const updateStatus = async (listingId, nextStatus) => {
     // If PUT fails, try PATCH
     if (!response.ok) {
       console.log('PUT failed, trying PATCH...');
-      response = await fetch(`${API_BASE}/api/listings/${listingId}/status`, {
+      response = await fetch(`${API_BASE}/api/rooms/listings/${listingId}/status`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json'

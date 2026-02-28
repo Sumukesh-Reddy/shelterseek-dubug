@@ -321,7 +321,7 @@ const HostDashboard = () => {
 
   const fetchListings = async (email) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/listings`);
+      const response = await axios.get(`${API_BASE_URL}/api/rooms/listings`);
       if (response.data.success) {
         const hostListings = response.data.data.listings.filter(l => l.email === email);
         setListings(hostListings);
@@ -335,7 +335,7 @@ const HostDashboard = () => {
   const fetchAnalytics = async () => {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/api/host/analytics`, {
+      const response = await axios.get(`${API_BASE_URL}/api/bookings/analytics/host`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -386,7 +386,7 @@ const HostDashboard = () => {
   const handleDelete = async (listingId) => {
     if (!window.confirm('Are you sure you want to delete this listing?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/api/listings/${listingId}`);
+      await axios.delete(`${API_BASE_URL}/api/rooms/listings/${listingId}`);
       setListings(prev => prev.filter(l => l._id !== listingId));
       // Auto refresh after delete
       setTimeout(() => {
@@ -534,7 +534,7 @@ const HostDashboard = () => {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       console.log('Token exists:', !!token);
 
-      const response = await axios.get(`${API_BASE_URL}/api/listings/${listingId}/qr`, {
+      const response = await axios.get(`${API_BASE_URL}/api/rooms/listings/${listingId}/qr`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -623,9 +623,7 @@ const HostDashboard = () => {
           >
             <FontAwesomeIcon icon={faArrowLeft} style={styles.navLinkIcon} /> Back
           </button>
-          <button type="button" onClick={() => navigate('/profile')} style={styles.navLink}>
-            <FontAwesomeIcon icon={faUser} style={styles.navLinkIcon} /> Profile
-          </button>
+          
           <button type="button" onClick={() => handleSectionChange('overview')} style={{ ...styles.navLink, ...(activeSection === 'overview' ? styles.navLinkActive : {}) }}>
             <FontAwesomeIcon icon={faHome} style={styles.navLinkIcon} /> Overview
           </button>

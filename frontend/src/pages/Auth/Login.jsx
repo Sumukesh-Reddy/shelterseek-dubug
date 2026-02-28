@@ -45,7 +45,7 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3001/send-otp', {
+      const res = await fetch('http://localhost:3001/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -74,7 +74,7 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3001/verify-otp', {
+      const res = await fetch('http://localhost:3001/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: otpString })
@@ -86,7 +86,7 @@ const Login = () => {
       setSuccess('OTP verified! Logging you in...');
       
       // Now proceed with login
-      const loginRes = await fetch('http://localhost:3001/login', {
+      const loginRes = await fetch('http://localhost:3001/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
