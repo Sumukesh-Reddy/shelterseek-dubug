@@ -64,4 +64,11 @@ router.get('/:listingId/qr',
   hostController.generateQRCode
 );
 
+router.get('/listings/:listingId/qr',
+    authenticateToken,
+    roleMiddleware.hostOnly,
+    hostController.generateQRCode
+  );
+
+  
 module.exports = router;

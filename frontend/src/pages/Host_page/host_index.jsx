@@ -5,7 +5,13 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './host_index.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faUser, faSyncAlt, faHome, faMapMarkerAlt, faBed, 
+  faUtensils, faWifi, faParking, faSnowflake, faTshirt,
+  faCar, faChargingStation, faArrowLeft, faArrowRight,
+  faCheck, faSave, faImages, faCalendarAlt, faTag,
+  faRuler, faVenusMars, faBus, faInfoCircle
+} from '@fortawesome/free-solid-svg-icons';
 import Footer from '../../components/Footer/Footer';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,11 +45,10 @@ const MapUpdater = ({ latitude, longitude, setFormData }) => {
   return null;
 };
 
-// PERFECT CALENDAR – NO DATE BUGS, NO AUTO SUBMIT
+// Calendar Component - Fixed with unique keys
 const UnavailableDatesCalendar = ({ selectedDates = [], onDatesChange, minDate, maxDate }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Get YYYY-MM-DD in LOCAL TIME (no timezone shift)
   const getLocalDateString = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -86,8 +91,19 @@ const UnavailableDatesCalendar = ({ selectedDates = [], onDatesChange, minDate, 
   const isSelected = (date) => date && selectedSet.has(getLocalDateString(date));
   const isInRange = (date) => date && date >= minDate && date <= maxDate;
 
+  // Day names with unique keys
+  const dayNames = [
+    { key: 'sun', label: 'S' },
+    { key: 'mon', label: 'M' },
+    { key: 'tue', label: 'T' },
+    { key: 'wed', label: 'W' },
+    { key: 'thu', label: 'T' },
+    { key: 'fri', label: 'F' },
+    { key: 'sat', label: 'S' }
+  ];
+
   return (
-    <div style={{
+    <div className="calendar-wrapper" style={{
       background: '#fff',
       borderRadius: '16px',
       padding: '1.5rem',
@@ -106,12 +122,14 @@ const UnavailableDatesCalendar = ({ selectedDates = [], onDatesChange, minDate, 
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '8px', textAlign: 'center', fontWeight: 'bold', color: '#e91e63', marginBottom: '10px' }}>
-        {['S','M','T','W','T','F','S'].map(d => <div key={d}>{d}</div>)}
+        {dayNames.map(day => (
+          <div key={day.key}>{day.label}</div>
+        ))}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '10px' }}>
         {days.map((date, i) => (
-          <div key={i}>
+          <div key={`day-${currentMonth.getMonth()}-${i}`}>
             {date ? (
               <button
                 type="button"
@@ -139,15 +157,532 @@ const UnavailableDatesCalendar = ({ selectedDates = [], onDatesChange, minDate, 
       </div>
 
       <div style={{ marginTop: '1rem', textAlign: 'center', color: '#e91e63', fontWeight: '600', fontSize: '0.95rem' }}>
-        {selectedSet.size} unavailable date(s) selected
+        {selectedSet.size} 📅 unavailable date(s) selected
       </div>
     </div>
   );
 };
 
+// Step Components
+const Step1BasicInfo = ({ formData, handleChange, errors }) => (
+  <div className="step-content">
+    <h2 className="step-title">
+      <span>🏠</span> Basic Information
+    </h2>
+    <div className="form-group">
+      <label><FontAwesomeIcon icon={faHome} /> Title</label>
+      <input 
+        type="text" 
+        name="title" 
+        value={formData.title} 
+        onChange={handleChange} 
+        placeholder="e.g., Cozy Beachfront Villa"
+        required 
+        className={errors.title ? 'error' : ''}
+      />
+      {errors.title && <small className="error-message">{errors.title}</small>}
+    </div>
+
+    <div className="form-group">
+      <label><FontAwesomeIcon icon={faInfoCircle} /> Description</label>
+      <textarea 
+        name="description" 
+        value={formData.description} 
+        onChange={handleChange} 
+        placeholder="Describe your property in detail..."
+        rows="4"
+        required 
+        className={errors.description ? 'error' : ''}
+      />
+      {errors.description && <small className="error-message">{errors.description}</small>}
+    </div>
+
+    <div className="form-row">
+      <div className="form-group">
+        <label>💰 Price per Night</label>
+        <input 
+          type="number" 
+          name="price" 
+          value={formData.price} 
+          onChange={handleChange} 
+          placeholder="₹"
+          required 
+        />
+      </div>
+      <div className="form-group">
+        <label>📅 Maximum Stay (days)</label>
+        <input 
+          type="number" 
+          name="maxdays" 
+          value={formData.maxdays} 
+          onChange={handleChange} 
+          placeholder="e.g., 30"
+          required 
+        />
+      </div>
+    </div>
+  </div>
+);
+
+const Step2Location = ({ formData, handleChange, setFormData, errors }) => {
+  const propertyTypes = [
+    { emoji: '🏠', name: 'PG' },
+    { emoji: '🏡', name: 'House' },
+    { emoji: '🏨', name: 'Resort' },
+    { emoji: '🏰', name: 'Villa' },
+    { emoji: '🏢', name: 'Duplex' },
+    { emoji: '🏕️', name: 'Cottage' },
+    { emoji: '🏙️', name: 'Apartment' },
+    { emoji: '🏚️', name: 'Hostel' },
+    { emoji: '🌾', name: 'Farm House' },
+    { emoji: '🏛️', name: 'Other' }
+  ];
+
+  const roomLocations = [
+    { emoji: '🏙️', name: 'In Town' },
+    { emoji: '🌳', name: 'Outside of Town' },
+    { emoji: '🏘️', name: 'Nearby Villages' },
+    { emoji: '🏡', name: 'Residential Area' },
+    { emoji: '🏢', name: 'Commercial Area' },
+    { emoji: '🛣️', name: 'Near Highway' },
+    { emoji: '🌄', name: 'Country Side' }
+  ];
+
+  return (
+    <div className="step-content">
+      <h2 className="step-title">
+        <span>📍</span> Location & Property Type
+      </h2>
+      
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faMapMarkerAlt} /> Address</label>
+        <input 
+          type="text" 
+          name="location" 
+          value={formData.location} 
+          onChange={handleChange} 
+          placeholder="Full address"
+          required 
+          className={errors.location ? 'error' : ''}
+        />
+        {errors.location && <small className="error-message">{errors.location}</small>}
+      </div>
+
+      <div className="form-group">
+        <label>🏷️ Property Type</label>
+        <div className="options-grid">
+          {propertyTypes.map(type => (
+            <div
+              key={type.name}
+              className={`option-card ${formData.propertyType === type.name ? 'selected' : ''}`}
+              onClick={() => handleChange({ target: { name: 'propertyType', value: type.name } })}
+            >
+              <div className="option-emoji">{type.emoji}</div>
+              <div className="option-title">{type.name}</div>
+            </div>
+          ))}
+        </div>
+        {errors.propertyType && <small className="error-message">{errors.propertyType}</small>}
+      </div>
+
+      <div className="form-group">
+        <label>📍 Room Location</label>
+        <div className="options-grid">
+          {roomLocations.map(loc => (
+            <div
+              key={loc.name}
+              className={`option-card ${formData.roomLocation === loc.name ? 'selected' : ''}`}
+              onClick={() => handleChange({ target: { name: 'roomLocation', value: loc.name } })}
+            >
+              <div className="option-emoji">{loc.emoji}</div>
+              <div className="option-title">{loc.name}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>🌐 Latitude</label>
+          <input 
+            type="number" 
+            step="0.00001" 
+            name="latitude" 
+            value={formData.latitude} 
+            onChange={handleChange} 
+            placeholder="e.g., 13.0827"
+            required 
+            className={errors.latitude ? 'error' : ''}
+          />
+          {errors.latitude && <small className="error-message">{errors.latitude}</small>}
+        </div>
+        <div className="form-group">
+          <label>🌐 Longitude</label>
+          <input 
+            type="number" 
+            step="0.00001" 
+            name="longitude" 
+            value={formData.longitude} 
+            onChange={handleChange} 
+            placeholder="e.g., 80.2707"
+            required 
+            className={errors.longitude ? 'error' : ''}
+          />
+          {errors.longitude && <small className="error-message">{errors.longitude}</small>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Step3RoomDetails = ({ formData, handleChange, errors }) => {
+  const roomTypes = [
+    { emoji: '🔄', name: 'Any' },
+    { emoji: '👥', name: 'Shared' },
+    { emoji: '🏠', name: 'Full' }
+  ];
+
+  const roomSizes = [
+    { emoji: '📏', name: 'Small' },
+    { emoji: '📐', name: 'Medium' },
+    { emoji: '📏📏', name: 'Large' }
+  ];
+
+  const transportOptions = [
+    { emoji: '🚶', name: 'Within 2km' },
+    { emoji: '🚲', name: 'Within 5km' },
+    { emoji: '🚗', name: 'Within 10km' }
+  ];
+
+  return (
+    <div className="step-content">
+      <h2 className="step-title">
+        <span>🛏️</span> Room Details
+      </h2>
+
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faBed} /> Room Type</label>
+        <div className="options-grid">
+          {roomTypes.map(type => (
+            <div
+              key={type.name}
+              className={`option-card ${formData.roomType === type.name ? 'selected' : ''}`}
+              onClick={() => handleChange({ target: { name: 'roomType', value: type.name } })}
+            >
+              <div className="option-emoji">{type.emoji}</div>
+              <div className="option-title">{type.name}</div>
+            </div>
+          ))}
+        </div>
+        {errors.roomType && <small className="error-message">{errors.roomType}</small>}
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>👥 Capacity</label>
+          <input 
+            type="number" 
+            name="capacity" 
+            value={formData.capacity} 
+            onChange={handleChange} 
+            placeholder="Number of guests"
+            required 
+            className={errors.capacity ? 'error' : ''}
+          />
+          {errors.capacity && <small className="error-message">{errors.capacity}</small>}
+        </div>
+        <div className="form-group">
+          <label>🛏️ Bedrooms</label>
+          <input 
+            type="number" 
+            name="bedrooms" 
+            value={formData.bedrooms} 
+            onChange={handleChange} 
+            placeholder="Number of bedrooms"
+            required 
+            className={errors.bedrooms ? 'error' : ''}
+          />
+          {errors.bedrooms && <small className="error-message">{errors.bedrooms}</small>}
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>🛌 Beds</label>
+          <input 
+            type="number" 
+            name="beds" 
+            value={formData.beds} 
+            onChange={handleChange} 
+            placeholder="Number of beds"
+            required 
+            className={errors.beds ? 'error' : ''}
+          />
+          {errors.beds && <small className="error-message">{errors.beds}</small>}
+        </div>
+        <div className="form-group">
+          <label><FontAwesomeIcon icon={faRuler} /> Room Size</label>
+          <div className="options-grid">
+            {roomSizes.map(size => (
+              <div
+                key={size.name}
+                className={`option-card ${formData.roomSize === size.name ? 'selected' : ''}`}
+                onClick={() => handleChange({ target: { name: 'roomSize', value: size.name } })}
+              >
+                <div className="option-emoji">{size.emoji}</div>
+                <div className="option-title">{size.name}</div>
+              </div>
+            ))}
+          </div>
+          {errors.roomSize && <small className="error-message">{errors.roomSize}</small>}
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faBus} /> Transport Access</label>
+        <div className="options-grid">
+          {transportOptions.map(opt => (
+            <div
+              key={opt.name}
+              className={`option-card ${formData.transportDistance === opt.name ? 'selected' : ''}`}
+              onClick={() => handleChange({ target: { name: 'transportDistance', value: opt.name } })}
+            >
+              <div className="option-emoji">{opt.emoji}</div>
+              <div className="option-title">{opt.name}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Step4Amenities = ({ formData, handleChange }) => {
+  const amenities = [
+    { emoji: '📶', name: 'WiFi' },
+    { emoji: '❄️', name: 'Air Conditioning' },
+    { emoji: '🧺', name: 'Laundry' },
+    { emoji: '🚿', name: 'Hot Water' },
+    { emoji: '🛗', name: 'Lift' },
+    { emoji: '🅿️', name: 'Free Car Parking' },
+    { emoji: '⚡', name: 'EV Charging' }
+  ];
+
+  const foodOptions = [
+    { emoji: '❌', name: 'Not Available' },
+    { emoji: '🥗', name: 'Vegetarian' },
+    { emoji: '🍗', name: 'Non-Vegetarian' },
+    { emoji: '🍽️', name: 'Both' }
+  ];
+
+  const genderOptions = [
+    { emoji: '👨', name: 'Male' },
+    { emoji: '👩', name: 'Female' }
+  ];
+
+  const handleCheckboxChange = (amenity) => {
+    const newAmenities = formData.amenities.includes(amenity)
+      ? formData.amenities.filter(a => a !== amenity)
+      : [...formData.amenities, amenity];
+    handleChange({ target: { name: 'amenities', value: newAmenities } });
+  };
+
+  return (
+    <div className="step-content">
+      <h2 className="step-title">
+        <span>✨</span> Amenities & Preferences
+      </h2>
+
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faUtensils} /> Food Facility</label>
+        <div className="options-grid">
+          {foodOptions.map(opt => (
+            <div
+              key={opt.name}
+              className={`option-card ${formData.foodFacility === opt.name ? 'selected' : ''}`}
+              onClick={() => handleChange({ target: { name: 'foodFacility', value: opt.name } })}
+            >
+              <div className="option-emoji">{opt.emoji}</div>
+              <div className="option-title">{opt.name}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faVenusMars} /> Host Gender</label>
+        <div className="options-grid">
+          {genderOptions.map(opt => (
+            <div
+              key={opt.name}
+              className={`option-card ${formData.hostGender === opt.name ? 'selected' : ''}`}
+              onClick={() => handleChange({ target: { name: 'hostGender', value: opt.name } })}
+            >
+              <div className="option-emoji">{opt.emoji}</div>
+              <div className="option-title">{opt.name}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faWifi} /> Amenities (Select multiple)</label>
+        <div className="multi-select-grid">
+          {amenities.map(item => (
+            <div
+              key={item.name}
+              className={`multi-option ${formData.amenities.includes(item.name) ? 'selected' : ''}`}
+              onClick={() => handleCheckboxChange(item.name)}
+            >
+              <div className="multi-emoji">{item.emoji}</div>
+              <div className="multi-label">{item.name}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faTag} /> Discount (%)</label>
+        <input 
+          type="range" 
+          name="discount" 
+          min="0" 
+          max="100" 
+          value={formData.discount} 
+          onChange={handleChange} 
+          style={{ width: '100%' }}
+        />
+        <div style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '1.2rem', fontWeight: 'bold', color: '#e91e63' }}>
+          {formData.discount}% OFF
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Step5Media = ({ 
+  existingImages, newImages, removedImageIds, 
+  handleRemoveExistingImage, handleRemoveNewImage, handleMediaUpload,
+  formData, handleUnavailableChange, today, maxDate,
+  uploadContainerRef, API_BASE_URL
+}) => {
+  return (
+    <div className="step-content">
+      <h2 className="step-title">
+        <span>📸</span> Photos & Availability
+      </h2>
+
+      {/* IMAGE UPLOAD SECTION */}
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faImages} /> Upload Photos & Videos</label>
+        
+        {/* Existing Images from Database */}
+        {existingImages.length > 0 && (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h4 style={{ color: '#e91e63', marginBottom: '0.75rem' }}>
+              Existing Images ({existingImages.length})
+            </h4>
+            <div className="image-preview">
+              {existingImages.map((imgId) => (
+                <div key={imgId} className="preview-item">
+                  <img
+                    src={`${API_BASE_URL}/api/images/${imgId}`}
+                    alt="Existing"
+                    className="preview-image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/images/placeholder.png';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="remove-image"
+                    onClick={() => handleRemoveExistingImage(imgId)}
+                    title="Remove this image"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* New Images to Upload */}
+        {newImages.length > 0 && (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h4 style={{ color: '#e91e63', marginBottom: '0.75rem' }}>
+              New Images to Upload ({newImages.length})
+            </h4>
+            <div className="image-preview">
+              {newImages.map((file, index) => (
+                <div key={`new-${index}-${file.name}`} className="preview-item">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt="New"
+                    className="preview-image"
+                  />
+                  <button
+                    type="button"
+                    className="remove-image"
+                    onClick={() => handleRemoveNewImage(index)}
+                    title="Remove this image"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Upload Area */}
+        <div className="upload-container" ref={uploadContainerRef}>
+          <div className="upload-area">
+            <span className="home-icon">🏠</span>
+            <div className="upload-text">
+              <label htmlFor="media" className="upload-label">
+                Click to upload
+                <input
+                  type="file"
+                  id="media"
+                  multiple
+                  accept="image/*,video/*"
+                  className="file-input"
+                  onChange={e => handleMediaUpload(e.target.files)}
+                />
+              </label>
+              <span>or drag and drop</span>
+            </div>
+            <p className="upload-hint">PNG, JPG, GIF, MP4 up to 50MB</p>
+            <p className="upload-hint" style={{ color: '#e91e63', fontWeight: 'bold' }}>
+              Total Images: {existingImages.length + newImages.length}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* CALENDAR SECTION */}
+      <div className="form-group">
+        <label><FontAwesomeIcon icon={faCalendarAlt} /> Host Unavailable Dates</label>
+        <p style={{fontSize:'14px',color:'#666',marginBottom:'10px'}}>
+          Click dates when you are <strong>not available</strong> to host (next 3 months)
+        </p>
+        <UnavailableDatesCalendar
+          selectedDates={formData.unavailableDates}
+          onDatesChange={handleUnavailableChange}
+          minDate={today}
+          maxDate={maxDate}
+        />
+      </div>
+    </div>
+  );
+};
+
+// Main Component
 const HostIndex = () => {
   const navigate = useNavigate();
-
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     title: '', description: '', price: '', location: '', latitude: '', longitude: '',
     maxdays: '', propertyType: '', capacity: '', roomType: '', bedrooms: '', beds: '',
@@ -155,9 +690,10 @@ const HostIndex = () => {
     amenities: [], discount: 0, unavailableDates: [],
   });
 
-  const [existingImages, setExistingImages] = useState([]); // Array of image IDs from DB
-  const [newImages, setNewImages] = useState([]); // Array of File objects
-  const [removedImageIds, setRemovedImageIds] = useState([]); // Array of removed image IDs
+  const [errors, setErrors] = useState({});
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
+  const [removedImageIds, setRemovedImageIds] = useState([]);
   const [listingId, setListingId] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -170,53 +706,47 @@ const HostIndex = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const API_BASE_URL = 'http://localhost:3001';
 
-  // Enhanced logout function
+  // Steps configuration
+  const steps = [
+    { number: 1, title: 'Basic Info', emoji: '🏠', icon: faHome },
+    { number: 2, title: 'Location', emoji: '📍', icon: faMapMarkerAlt },
+    { number: 3, title: 'Room Details', emoji: '🛏️', icon: faBed },
+    { number: 4, title: 'Amenities', emoji: '✨', icon: faWifi },
+    { number: 5, title: 'Media', emoji: '📸', icon: faImages }
+  ];
+
   const handleLogout = () => {
-    // Clear ALL storage
     localStorage.clear();
     sessionStorage.clear();
-    
-    // Clear cookies if any
     document.cookie.split(";").forEach(c => {
       document.cookie = c.replace(/^ +/, "")
         .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
-    
-    // Force redirect to home with full reload
     window.location.href = '/';
   };
 
-  // Refresh function to reload listing data
   const handleRefresh = async () => {
     if (listingId) {
       setIsRefreshing(true);
       try {
         await fetchListing(listingId);
         setLastRefresh(new Date());
-        console.log('Listing data refreshed successfully');
       } catch (error) {
         console.error('Refresh failed:', error);
         alert('Failed to refresh listing data');
       } finally {
         setIsRefreshing(false);
       }
-    } else {
-      // For new listing form, just reset form and show message
-      setLastRefresh(new Date());
-      alert('Form refreshed. Ready for new listing.');
     }
   };
 
-  // Auto-refresh every 30 seconds if editing a listing
   useEffect(() => {
     let interval;
     if (listingId) {
       interval = setInterval(() => {
-        console.log('Auto-refreshing listing data...');
         fetchListing(listingId);
-      }, 30000); 
+      }, 30000);
     }
-    
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -230,9 +760,9 @@ const HostIndex = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('listingId');
-    if (id) { 
-      setListingId(id); 
-      fetchListing(id); 
+    if (id) {
+      setListingId(id);
+      fetchListing(id);
     }
   }, []);
 
@@ -286,7 +816,6 @@ const HostIndex = () => {
           : [],
       });
       
-      // Set existing images
       setExistingImages(l.images || []);
       
     } catch (err) { 
@@ -296,12 +825,17 @@ const HostIndex = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+    
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
+
     if (type === 'checkbox') {
-      setFormData(prev => ({
-        ...prev,
-        amenities: checked ? [...prev.amenities, value] : prev.amenities.filter(a => a !== value)
-      }));
+      // Handle checkbox separately
+    } else if (name === 'amenities' && Array.isArray(value)) {
+      setFormData(prev => ({ ...prev, [name]: value }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -311,24 +845,20 @@ const HostIndex = () => {
     setFormData(prev => ({ ...prev, unavailableDates: dates }));
   };
 
-  // Remove existing image (from DB)
   const handleRemoveExistingImage = (imageId) => {
     setRemovedImageIds(prev => [...prev, imageId]);
     setExistingImages(prev => prev.filter(id => id !== imageId));
   };
 
-  // Remove new image (not yet uploaded)
   const handleRemoveNewImage = (index) => {
     setNewImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Handle new image upload
   const handleMediaUpload = (files) => {
     const filesArray = Array.from(files);
     setNewImages(prev => [...prev, ...filesArray]);
   };
 
-  // Drag and drop handlers
   useEffect(() => {
     const container = uploadContainerRef.current;
     if (!container) return;
@@ -360,9 +890,54 @@ const HostIndex = () => {
     };
   }, []);
 
+  const validateStep = (step) => {
+    const newErrors = {};
+    
+    if (step === 1) {
+      if (!formData.title?.trim()) newErrors.title = 'Title is required';
+      if (!formData.description?.trim()) newErrors.description = 'Description is required';
+      if (!formData.price) newErrors.price = 'Price is required';
+      if (!formData.maxdays) newErrors.maxdays = 'Maximum days is required';
+    } else if (step === 2) {
+      if (!formData.location?.trim()) newErrors.location = 'Location is required';
+      if (!formData.propertyType) newErrors.propertyType = 'Property type is required';
+      if (!formData.latitude) newErrors.latitude = 'Latitude is required';
+      if (!formData.longitude) newErrors.longitude = 'Longitude is required';
+    } else if (step === 3) {
+      if (!formData.roomType) newErrors.roomType = 'Room type is required';
+      if (!formData.capacity) newErrors.capacity = 'Capacity is required';
+      if (!formData.bedrooms) newErrors.bedrooms = 'Bedrooms is required';
+      if (!formData.beds) newErrors.beds = 'Beds is required';
+      if (!formData.roomSize) newErrors.roomSize = 'Room size is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => Math.min(prev + 1, 5));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handlePrev = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Only allow submission on step 5
+    if (currentStep !== 5) {
+      console.log('Cannot submit on step', currentStep);
+      return;
+    }
+    
     if (isSubmitting) return;
+    
     setIsSubmitting(true);
 
     const user = getCurrentUser();
@@ -386,16 +961,13 @@ const HostIndex = () => {
       }
     });
 
-    // Add existing images (those not removed)
     const remainingExistingImages = existingImages.filter(id => !removedImageIds.includes(id));
     data.append('existingImages', JSON.stringify(remainingExistingImages));
     
-    // Add removed images
     if (removedImageIds.length > 0) {
       data.append('removedImages', removedImageIds.join(','));
     }
 
-    // Add new image files
     newImages.forEach(file => {
       data.append('images', file);
     });
@@ -407,20 +979,35 @@ const HostIndex = () => {
       
       const method = listingId ? 'put' : 'post';
       
+      const token = localStorage.getItem('token');
+      
       const response = await axios({
         method,
         url,
         data,
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (response.data.success) {
-        alert(listingId ? 'Listing updated successfully!' : 'Listing created successfully!');
+        alert(listingId ? '✅ Listing updated successfully!' : '✅ Listing created successfully!');
         window.location.href = '/dashboard';
+      } else {
+        alert('❌ Failed to save listing: ' + (response.data.message || 'Unknown error'));
       }
     } catch (err) {
       console.error('Submit error:', err);
-      alert(err.response?.data?.message || 'Failed to save listing');
+      let errorMessage = 'Failed to save listing';
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      alert(`❌ ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -430,12 +1017,41 @@ const HostIndex = () => {
   const maxDate = new Date();
   maxDate.setMonth(today.getMonth() + 3);
 
+  const getStepContent = () => {
+    switch(currentStep) {
+      case 1:
+        return <Step1BasicInfo formData={formData} handleChange={handleChange} errors={errors} />;
+      case 2:
+        return <Step2Location formData={formData} handleChange={handleChange} setFormData={setFormData} errors={errors} />;
+      case 3:
+        return <Step3RoomDetails formData={formData} handleChange={handleChange} errors={errors} />;
+      case 4:
+        return <Step4Amenities formData={formData} handleChange={handleChange} />;
+      case 5:
+        return <Step5Media 
+          existingImages={existingImages}
+          newImages={newImages}
+          removedImageIds={removedImageIds}
+          handleRemoveExistingImage={handleRemoveExistingImage}
+          handleRemoveNewImage={handleRemoveNewImage}
+          handleMediaUpload={handleMediaUpload}
+          formData={formData}
+          handleUnavailableChange={handleUnavailableChange}
+          today={today}
+          maxDate={maxDate}
+          uploadContainerRef={uploadContainerRef}
+          API_BASE_URL={API_BASE_URL}
+        />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <div className="host-top-navbar">
         <div className="host-logo"><h2>ShelterSeek</h2></div>
         
-        {/* Refresh Button in Navbar */}
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -490,21 +1106,7 @@ const HostIndex = () => {
             <ul>
               <li><a href="/dashboard">Dashboard</a></li>
               <li><a href="/chat">Chat</a></li>
-              <li><button onClick={handleLogout} 
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#e91e63',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                padding: 0,
-                transition: 'color 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginLeft: '3rem'
-              }}
-              >Logout</button></li>
+              <li><button onClick={handleLogout}>Logout</button></li>
             </ul>
           </div>
         )}
@@ -535,418 +1137,70 @@ const HostIndex = () => {
         </div>
 
         <div className="form-container">
-          <form onSubmit={handleSubmit}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              marginBottom: '1.5rem',
-              flexWrap: 'wrap',
-              gap: '1rem'
-            }}>
-              <h2>{listingId ? 'Edit Listing' : 'Create Listing'}</h2>
+          {/* Stepper */}
+          <div className="stepper-container">
+            <div className="stepper">
+              <div className="stepper-line"></div>
+              <div 
+                className="stepper-progress" 
+                style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+              ></div>
               
-              {/* Refresh Status Indicator */}
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.75rem',
-                fontSize: '0.875rem',
-                color: '#6b7280'
-              }}>
-                {listingId && (
-                  <>
-                    <div style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: '#10b981',
-                      animation: 'pulse 2s infinite'
-                    }} />
-                    <span>Auto-refreshing every 30s</span>
-                    {lastRefresh && (
-                      <span style={{ 
-                        marginLeft: '0.5rem', 
-                        color: '#e91e63',
-                        fontSize: '0.8rem'
-                      }}>
-                        Last refresh: {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Title</label>
-              <input 
-                type="text" 
-                name="title" 
-                value={formData.title} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Description</label>
-              <textarea 
-                name="description" 
-                value={formData.description} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Price per Night</label>
-                <input 
-                  type="number" 
-                  name="price" 
-                  value={formData.price} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-              <div className="form-group">
-                <label>Maximum Stay (days)</label>
-                <input 
-                  type="number" 
-                  name="maxdays" 
-                  value={formData.maxdays} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Location (Address)</label>
-              <input 
-                type="text" 
-                name="location" 
-                value={formData.location} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Latitude</label>
-                <input 
-                  type="number" 
-                  step="0.00001" 
-                  name="latitude" 
-                  value={formData.latitude} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-              <div className="form-group">
-                <label>Longitude</label>
-                <input 
-                  type="number" 
-                  step="0.00001" 
-                  name="longitude" 
-                  value={formData.longitude} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Property Type</label>
-              <select 
-                name="propertyType" 
-                value={formData.propertyType} 
-                onChange={handleChange} 
-                required
-              >
-                <option value="">Select</option>
-                {['PG','House','Resort','Villa','Duplex','Cottage','Apartment','Hostel','Farm House','Other'].map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Capacity</label>
-                <input 
-                  type="number" 
-                  name="capacity" 
-                  value={formData.capacity} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-              <div className="form-group">
-                <label>Room Type</label>
-                <select 
-                  name="roomType" 
-                  value={formData.roomType} 
-                  onChange={handleChange} 
-                  required
+              {steps.map(step => (
+                <div 
+                  key={step.number} 
+                  className="step-item"
+                  onClick={() => {
+                    if (step.number < currentStep) {
+                      setCurrentStep(step.number);
+                    }
+                  }}
                 >
-                  <option value="">Select</option>
-                  <option>Any</option>
-                  <option>Shared</option>
-                  <option>Full</option>
-                </select>
-              </div>
+                  <div 
+                    className={`step-circle 
+                      ${step.number < currentStep ? 'completed' : ''} 
+                      ${step.number === currentStep ? 'active' : ''}
+                    `}
+                  >
+                    {step.number < currentStep ? <FontAwesomeIcon icon={faCheck} /> : step.number}
+                  </div>
+                  <div 
+                    className={`step-label 
+                      ${step.number === currentStep ? 'active' : ''}
+                      ${step.number < currentStep ? 'completed' : ''}
+                    `}
+                  >
+                    {step.emoji} {step.title}
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Bedrooms</label>
-                <input 
-                  type="number" 
-                  name="bedrooms" 
-                  value={formData.bedrooms} 
-                  onChange={handleChange} 
-                  required 
+            {/* Progress dots for mobile */}
+            <div className="progress-indicator">
+              {steps.map(step => (
+                <div
+                  key={step.number}
+                  className={`progress-dot 
+                    ${step.number === currentStep ? 'active' : ''}
+                    ${step.number < currentStep ? 'completed' : ''}
+                  `}
                 />
-              </div>
+              ))}
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {getStepContent()}
+
+            {/* Map preview for step 2 */}
+            {currentStep === 2 && formData.latitude && formData.longitude && (
               <div className="form-group">
-                <label>Beds</label>
-                <input 
-                  type="number" 
-                  name="beds" 
-                  value={formData.beds} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Room Size</label>
-              <select 
-                name="roomSize" 
-                value={formData.roomSize} 
-                onChange={handleChange} 
-                required
-              >
-                <option value="">Select</option>
-                <option>Small</option>
-                <option>Medium</option>
-                <option>Large</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Room Location</label>
-              <div className="radio-group">
-                {['In Town','Outside of Town','Nearby Villages','Residential Area','Commercial Area','Near Highway','Country Side'].map(o => (
-                  <label key={o}>
-                    <input 
-                      type="radio" 
-                      name="roomLocation" 
-                      value={o} 
-                      checked={formData.roomLocation===o} 
-                      onChange={handleChange} 
-                    /> 
-                    {o}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Near Transport</label>
-              <div className="radio-group">
-                {['Within 2km','Within 5km','Within 10km'].map(o => (
-                  <label key={o}>
-                    <input 
-                      type="radio" 
-                      name="transportDistance" 
-                      value={o} 
-                      checked={formData.transportDistance===o} 
-                      onChange={handleChange} 
-                    /> 
-                    {o}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Host Gender</label>
-              <div className="radio-group">
-                {['Male','Female'].map(g => (
-                  <label key={g}>
-                    <input 
-                      type="radio" 
-                      name="hostGender" 
-                      value={g} 
-                      checked={formData.hostGender===g} 
-                      onChange={handleChange} 
-                    /> 
-                    {g}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Food Facility</label>
-              <div className="radio-group">
-                {['Not Available','Vegetarian','Non-Vegetarian','Both'].map(f => (
-                  <label key={f}>
-                    <input 
-                      type="radio" 
-                      name="foodFacility" 
-                      value={f} 
-                      checked={formData.foodFacility===f} 
-                      onChange={handleChange} 
-                    /> 
-                    {f}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Amenities</label>
-              <div className="checkbox-group">
-                {['WiFi','Air Conditioning','Laundry','Hot Water','Lift','Free Car Parking','EV Charging'].map(a => (
-                  <label key={a}>
-                    <input 
-                      type="checkbox" 
-                      value={a} 
-                      checked={formData.amenities.includes(a)} 
-                      onChange={handleChange} 
-                    /> 
-                    {a}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Discount (%)</label>
-              <input 
-                type="range" 
-                name="discount" 
-                min="0" 
-                max="100" 
-                value={formData.discount} 
-                onChange={handleChange} 
-              />
-              <span>{formData.discount}%</span>
-            </div>
-
-            {/* IMAGE UPLOAD SECTION - FIXED */}
-            <div className="form-group">
-              <label>Upload Photos & Videos</label>
-              
-              {/* Existing Images from Database */}
-              {existingImages.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ color: '#e91e63', marginBottom: '0.75rem' }}>
-                    Existing Images ({existingImages.length})
-                  </h4>
-                  <div className="image-preview">
-                    {existingImages.map((imgId) => (
-                      <div key={imgId} className="preview-item">
-                        <img
-                          src={`${API_BASE_URL}/api/images/${imgId}`}
-                          alt="Existing"
-                          className="preview-image"
-                        />
-                        <button
-                          type="button"
-                          className="remove-image"
-                          onClick={() => handleRemoveExistingImage(imgId)}
-                          title="Remove this image"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* New Images to Upload */}
-              {newImages.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ color: '#e91e63', marginBottom: '0.75rem' }}>
-                    New Images to Upload ({newImages.length})
-                  </h4>
-                  <div className="image-preview">
-                    {newImages.map((file, index) => (
-                      <div key={index} className="preview-item">
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt="New"
-                          className="preview-image"
-                        />
-                        <button
-                          type="button"
-                          className="remove-image"
-                          onClick={() => handleRemoveNewImage(index)}
-                          title="Remove this image"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Upload Area */}
-              <div className="upload-container" ref={uploadContainerRef}>
-                <div className="upload-area">
-                  <span className="home-icon">🏠</span>
-                  <div className="upload-text">
-                    <label htmlFor="media" className="upload-label">
-                      Upload files
-                      <input
-                        type="file"
-                        id="media"
-                        multiple
-                        accept="image/*,video/*"
-                        className="file-input"
-                        ref={mediaInputRef}
-                        onChange={e => handleMediaUpload(e.target.files)}
-                      />
-                    </label>
-                    <span>or drag and drop</span>
-                  </div>
-                  <p className="upload-hint">PNG, JPG, GIF, MP4 up to 50MB</p>
-                  <p className="upload-hint" style={{ color: '#e91e63', fontWeight: 'bold' }}>
-                    Total Images: {existingImages.length + newImages.length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Host Unavailable Dates</label>
-              <p style={{fontSize:'14px',color:'#666',marginBottom:'10px'}}>
-                Click dates when you are <strong>not available</strong> to host (next 3 months)
-              </p>
-              <UnavailableDatesCalendar
-                selectedDates={formData.unavailableDates}
-                onDatesChange={handleUnavailableChange}
-                minDate={today}
-                maxDate={maxDate}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Location Map (Click to set)</label>
-              {formData.latitude && formData.longitude ? (
+                <label>🗺️ Location Map (Click to set)</label>
                 <MapContainer 
                   center={[parseFloat(formData.latitude), parseFloat(formData.longitude)]} 
                   zoom={13} 
-                  style={{height:'400px',borderRadius:'12px'}}
+                  style={{height:'300px', borderRadius:'12px', marginTop: '1rem'}}
                 >
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   <Marker position={[parseFloat(formData.latitude), parseFloat(formData.longitude)]} />
@@ -956,63 +1210,111 @@ const HostIndex = () => {
                     setFormData={setFormData} 
                   />
                 </MapContainer>
-              ) : (
-                <MapContainer 
-                  center={[20.5937,78.9629]} 
-                  zoom={5} 
-                  style={{height:'400px',borderRadius:'12px'}}
-                >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <MapUpdater setFormData={setFormData} />
-                </MapContainer>
-              )}
-            </div>
+              </div>
+            )}
 
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              marginTop: '2rem',
-              gap: '1rem'
-            }}>
-              <button 
-                type="button" 
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: isRefreshing ? '#6b7280' : '#f3f4f6',
-                  color: '#374151',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  cursor: isRefreshing ? 'not-allowed' : 'pointer',
-                  fontSize: '0.875rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  opacity: isRefreshing ? 0.7 : 1
-                }}
-              >
-                <FontAwesomeIcon icon={faSyncAlt} spin={isRefreshing} /> 
-                {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-              </button>
+            {/* Navigation Buttons - FIXED VERSION */}
+            <div className="step-navigation">
+              {currentStep > 1 && (
+                <button 
+                  type="button" 
+                  onClick={handlePrev}
+                  className="nav-btn prev"
+                  disabled={isSubmitting}
+                >
+                  <FontAwesomeIcon icon={faArrowLeft} /> Previous
+                </button>
+              )}
               
-              <button type="submit" className="submit-button" disabled={isSubmitting || isRefreshing}>
-                {isSubmitting ? 'Saving...' : (listingId ? 'Update Listing' : 'Submit Listing')}
-              </button>
+              {currentStep < 5 ? (
+                <button 
+                  type="button" 
+                  onClick={handleNext}
+                  className="nav-btn next"
+                  style={{ marginLeft: currentStep === 1 ? 'auto' : '0' }}
+                  disabled={isSubmitting}
+                >
+                  Next <FontAwesomeIcon icon={faArrowRight} />
+                </button>
+              ) : (
+                <button 
+                  type="submit" 
+                  className="nav-btn submit"
+                  disabled={isSubmitting || isRefreshing}
+                  style={{ marginLeft: 'auto' }}
+                >
+                  <FontAwesomeIcon icon={faSave} /> {isSubmitting ? 'Saving...' : (listingId ? 'Update Listing' : 'Create Listing')}
+                </button>
+              )}
             </div>
           </form>
         </div>
       </div>
 
+      {/* Loading Overlay */}
+      {isSubmitting && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <p style={{ marginTop: '1rem', color: '#e91e63', fontWeight: 'bold' }}>
+            {listingId ? 'Updating listing...' : 'Creating listing...'}
+          </p>
+        </div>
+      )}
+
       <Footer />
       
-      {/* Add pulse animation CSS */}
       <style>
         {`
           @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+          }
+          
+          .error-message {
+            color: #f44336;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            padding: 0.5rem;
+            background: #ffebee;
+            border-radius: 4px;
+            border-left: 3px solid #f44336;
+            display: block;
+          }
+          
+          input.error,
+          textarea.error,
+          select.error {
+            border-color: #f44336 !important;
+            background-color: #fff8f8;
+          }
+          
+          .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+          }
+          
+          .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #e91e63;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
           }
         `}
       </style>
