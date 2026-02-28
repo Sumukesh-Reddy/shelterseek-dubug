@@ -173,15 +173,24 @@ app.get('/debug-env', (req, res) => {
   });
 });
 
-// ❌ NO MIDDLEWARE BLOCKING SOCKET.IO - REMOVED COMPLETELY
-
-// 404 handler - Let Socket.IO handle its own paths
 app.all('*', (req, res, next) => {
-  // If it's a Socket.IO path, just return 404 silently (Socket.IO will handle it)
+
   if (req.originalUrl.includes('/socket.io/')) {
     return res.status(404).end();
   }
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+app.get('/api/new-customers', (req, res) => {
+  res.json({ success: true, data: [] });
+});
+
+app.get('/api/recent-activities', (req, res) => {
+  res.json({ success: true, data: [] });
+});
+
+app.get('/api/revenue', (req, res) => {
+  res.json({ success: true, totalRevenue: 0, thisMonthRevenue: 0, thisWeekRevenue: 0 });
 });
 
 // Global error handler

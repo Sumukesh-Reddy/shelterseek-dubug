@@ -243,3 +243,58 @@ exports.clearHistory = catchAsync(async (req, res, next) => {
   
   res.json({ success: true, message: 'History cleared successfully' });
 });
+exports.getNewCustomers = catchAsync(async (req, res) => {
+  try {
+    const travelers = await Traveler.find({ accountType: 'traveller' })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('name email accountType createdAt profilePhoto')
+      .lean();
+
+    const hosts = await Host.find({ accountType: 'host' })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('name email accountType createdAt profilePhoto')
+      .lean();
+
+    const allCustomers = [...travelers, ...hosts]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 4);
+
+    const formattedCustomers = allCustomers.map(customer => ({
+      id: customer._id,
+      name: customer.name || 'Unknown User',
+      email: customer.email,
+      accountType: customer.accountType === 'traveller' ? 'traveller' : 'host',
+      joinedDate: customer.createdAt ? 
+        new Date(customer.createdAt).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'short', day: 'numeric'
+        }) : 'Recently',
+      avatar: customer.profilePhoto || 
+        (customer.accountType === 'traveller' ? 
+          'https://ui-avatars.com/api/?name=' + encodeURIComponent(customer.name || 'User') + '&background=4e73df&color=fff' :
+          'https://ui-avatars.com/api/?name=' + encodeURIComponent(customer.name || 'Host') + '&background=1cc88a&color=fff'
+        ),
+      isNew: customer.createdAt ? 
+        (Date.now() - new Date(customer.createdAt).getTime()) < (7 * 24 * 60 * 60 * 1000) : true
+    }));
+
+    res.json({ 
+      success: true,
+      data: formattedCustomers,
+      count: formattedCustomers.length,
+      summary: {
+        travelersCount: travelers.length,
+        hostsCount: hosts.length,
+        totalNewCustomers: formattedCustomers.length
+      }
+    });
+  } catch (error) {
+    console.error('Error in getNewCustomers:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch new customers',
+      data: [] 
+    });
+  }
+});

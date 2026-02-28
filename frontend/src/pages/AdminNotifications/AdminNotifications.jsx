@@ -19,13 +19,32 @@ function AdminNotifications() {
   const fetchUsers = () => {
     setLoading(true);
     setError('');
-    fetch(`http://localhost:3001/api/users?accountType=${activeTab}`)
+    
+    const token = localStorage.getItem('token'); // Get token from storage
+    
+    fetch(`http://localhost:3001/api/users?accountType=${activeTab}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
+        console.log('Users data:', data); // For debugging
+        
+        // Handle different response formats
+        if (data.success && data.data) {
+          if (activeTab === 'host' && data.data.hosts) {
+            setUsers(data.data.hosts);
+          } else if (activeTab === 'traveller' && data.data.travelers) {
+            setUsers(data.data.travelers);
+          } else if (Array.isArray(data.data)) {
+            setUsers(data.data);
+          } else {
+            setUsers([]);
+          }
+        } else if (Array.isArray(data)) {
           setUsers(data);
-        } else if (data?.data && Array.isArray(data.data)) {
-          setUsers(data.data);
         } else {
           setUsers([]);
           setError('Unexpected response from server');
@@ -48,9 +67,16 @@ function AdminNotifications() {
     if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
-        method: 'DELETE'
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`http://localhost:3001/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
+      
       const data = await response.json();
 
       if (data.success) {

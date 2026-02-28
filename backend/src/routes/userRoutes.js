@@ -8,17 +8,12 @@ const router = express.Router();
 
 // Public routes - NO AUTHENTICATION REQUIRED
 router.get('/counts', userController.getUserCounts);
-router.get('/new-customers', userController.getNewCustomers);  // Add this
+router.get('/new-customers', userController.getNewCustomers);  
 router.get('/hosts', userController.getHosts);
 router.get('/:email', userController.getUserByEmail);
 
 // Protected routes - Admin only
 router.get('/', authenticateToken, roleMiddleware.adminOnly, userController.getAllUsers);
-
-// ========== TRAVELER SPECIFIC ROUTES ==========
-// These must be BEFORE any parameterized routes
-
-// Liked rooms
 router.post('/traveler/liked-rooms', 
   authenticateToken, 
   roleMiddleware.travelerOnly, 

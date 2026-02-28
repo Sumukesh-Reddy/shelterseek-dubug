@@ -20,7 +20,15 @@ function TravelerDetails() {
     const fetchTravelerDetails = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:3001/api/traveler/${email}/bookings`);
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`http://localhost:3001/api/bookings/traveler/${encodeURIComponent(email)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
         const data = await response.json();
         
         if (data.success) {
@@ -456,7 +464,7 @@ function TravelerDetails() {
                       <tr key={booking.bookingId} style={styles.tableRow}>
                         <td style={styles.tableCell}>
                           <div style={{ fontWeight: 600, fontSize: '13px' }}>
-                            {booking.bookingId.substring(0, 12)}...
+                            {booking.bookingId?.substring(0, 12)}...
                           </div>
                           {booking.transactionId && (
                             <div style={{ fontSize: '12px', color: colors.neutral.gray }}>

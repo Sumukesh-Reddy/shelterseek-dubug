@@ -36,125 +36,107 @@ function AdminDashboard() {
 
   // fetch data
   useEffect(() => {
-    // Fetch booking summary (list)
-    fetch('http://localhost:3001/api/bookings/summarys')
-      .then(res => res.json())
-      .then(response => {
-        console.log('Booking summary response:', response);
-        if (response.success && Array.isArray(response.bookings)) {
-          setBookings(response.bookings);
-        } else {
-          console.error('Invalid booking summary response:', response);
-          setBookings([]);
+   // Fetch booking summary (list)
+fetch('http://localhost:3001/api/bookings/summarys')
+.then(res => res.json())
+.then(response => {
+  if (response.success && Array.isArray(response.bookings)) {
+    setBookings(response.bookings);
+  } else {
+    setBookings([]);
+  }
+})
+.catch(err => {
+  console.error('Error fetching booking summary:', err);
+  setBookings([]);
+});
+
+// Fetch room counts
+fetch('http://localhost:3001/api/rooms/count')
+.then(res => res.json())
+.then(data => {
+  if (data.success) {
+    setRoomCounts(data.counts);
+    
+    let shared = 0;
+    let full = 0;
+    
+    if (Array.isArray(data.popularTypes)) {
+      data.popularTypes.forEach((t) => {
+        if (/shared/i.test(t._id)) {
+          shared = t.count;
+        } else if (/full/i.test(t._id)) {
+          full = t.count;
         }
-      })
-      .catch(err => {
-        console.error('Error fetching booking summary:', err);
-        setBookings([]);
       });
+    }
+    
+    setRoomTypeCounts({ shared, full });
+  }
+})
+.catch(err => console.error('Error fetching room counts:', err))
+.finally(() => setLoadingRooms(false));
 
-    // ✅ Fetch room counts + shared/full from popularTypes
-    fetch('http://localhost:3001/api/rooms/count')
-      .then(res => res.json())
-      .then(data => {
-        console.log('Room counts response:', data);
-        if (data.success) {
-          setRoomCounts(data.counts);
+// Fetch new customers - UPDATED URL
+fetch('http://localhost:3001/api/admin/new-customers', {
+headers: {
+  'Authorization': `Bearer ${localStorage.getItem('token')}`
+}
+})
+.then(res => res.json())
+.then(result => {
+  if (result.success && Array.isArray(result.data)) {
+    setNewCustomers(result.data);
+  } else {
+    setNewCustomers([]);
+  }
+})
+.catch((err) => {
+  console.error('Error fetching new customers:', err);
+  setNewCustomers([]);
+});
 
-          // 🔹 NEW: derive Shared / Full counts from popularTypes
-          let shared = 0;
-          let full = 0;
+// Fetch recent activities - UPDATED URL
+fetch('http://localhost:3001/api/admin/recent-activities', {
+headers: {
+  'Authorization': `Bearer ${localStorage.getItem('token')}`
+}
+})
+.then(res => res.json())
+.then(result => {
+  if (Array.isArray(result?.data)) setRecentActivities(result.data);
+  else if (Array.isArray(result)) setRecentActivities(result);
+  else setRecentActivities([]);
+})
+.catch(() => setRecentActivities([]));
 
-          if (Array.isArray(data.popularTypes)) {
-            data.popularTypes.forEach((t) => {
-              if (/shared/i.test(t._id)) {
-                shared = t.count;
-              } else if (/full/i.test(t._id)) {
-                full = t.count;
-              }
-            });
-          }
+// Fetch revenue - UPDATED URL
+fetch('http://localhost:3001/api/admin/revenue', {
+headers: {
+  'Authorization': `Bearer ${localStorage.getItem('token')}`
+}
+})
+.then(res => res.json())
+.then(data => {
+  if (data) {
+    setTotalRevenue(data.totalRevenue ?? 0);
+    setThisMonthRevenue(data.thisMonthRevenue ?? 0);
+    setThisWeekRevenue(data.thisWeekRevenue ?? 0);
+  }
+})
+.catch(() => {});
 
-          setRoomTypeCounts({ shared, full });
-        } else {
-          console.error('Failed to fetch room counts:', data.message);
-          setRoomCounts({
-            total: 0,
-            available: 0,
-            booked: 0,
-            thisMonthBooked: 0,
-            thisWeekBooked: 0
-          });
-          setRoomTypeCounts({ shared: 0, full: 0 });
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching room counts:', err);
-        setRoomCounts({
-          total: 0,
-          available: 0,
-          booked: 0,
-          thisMonthBooked: 0,
-          thisWeekBooked: 0
-        });
-        setRoomTypeCounts({ shared: 0, full: 0 });
-      })
-      .finally(() => setLoadingRooms(false));
-
-    // Fetch new customers - updated to show account type
-    fetch('http://localhost:3001/api/new-customers')
-      .then(res => res.json())
-      .then(result => {
-        console.log('New customers response:', result);
-        if (result.success && Array.isArray(result.data)) {
-          setNewCustomers(result.data);
-        } else if (Array.isArray(result?.data)) {
-          setNewCustomers(result.data);
-        } else if (Array.isArray(result)) {
-          setNewCustomers(result);
-        } else {
-          console.error('Invalid new customers response:', result);
-          setNewCustomers([]);
-        }
-      })
-      .catch((err) => {
-        console.error('Error fetching new customers:', err);
-        setNewCustomers([]);
-      });
-
-    // Fetch recent activities
-    fetch('http://localhost:3001/api/recent-activities')
-      .then(res => res.json())
-      .then(result => {
-        if (Array.isArray(result?.data)) setRecentActivities(result.data);
-        else if (Array.isArray(result)) setRecentActivities(result);
-        else setRecentActivities([]);
-      })
-      .catch(() => setRecentActivities([]));
-
-    // Fetch revenue
-    fetch('http://localhost:3001/api/revenue')
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          setTotalRevenue(data.totalRevenue ?? 0);
-          setThisMonthRevenue(data.thisMonthRevenue ?? 0);
-          setThisWeekRevenue(data.thisWeekRevenue ?? 0);
-        }
-      })
-      .catch(() => {});
-
-    // Fetch booking counts (numbers)
-    fetch('http://localhost:3001/api/bookings/summary')
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          setTotalBookings(data.total ?? 0);
-          setThisMonthBookings(data.thisMonth ?? 0);
-          setThisWeekBookings(data.thisWeek ?? 0);
-        }
-      })
-      .catch(() => {});
+// Fetch booking counts (these are public, no auth needed)
+fetch('http://localhost:3001/api/bookings/summary')
+.then(res => res.json())
+.then(data => {
+  if (data) {
+    setTotalBookings(data.total ?? 0);
+    setThisMonthBookings(data.thisMonth ?? 0);
+    setThisWeekBookings(data.thisWeek ?? 0);
+  }
+})
+.catch(() => {});
   }, []);
 
   // Function to get initials from name

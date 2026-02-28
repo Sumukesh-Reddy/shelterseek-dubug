@@ -43,38 +43,46 @@ const AdminTrends = () => {
   ];
 
   // ---------- FETCH DATA ----------
-  const fetchTrendsData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("http://localhost:3001/api/trends");
-      const data = await res.json();
+// In AdminTrends.jsx, update the fetch URL
+const fetchTrendsData = useCallback(async () => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem('token'); // Get token from localStorage
+    
+    const res = await fetch("http://localhost:3001/api/admin/trends", {
+      headers: {
+        'Authorization': `Bearer ${token}` // Add auth token
+      }
+    });
+    
+    const data = await res.json();
 
-      if (!data.success) throw new Error("API failed");
+    if (!data.success) throw new Error("API failed");
 
-      const processed = data.trends.map((r, idx) => ({
-        id: r.roomId || idx,
-        name: r.roomName || r.title || `Room ${idx + 1}`,
-        views: r.totalViews || 0,
-        likes: r.totalLikes || 0,
-        engagement:
-          r.totalViews > 0
-            ? Math.round((r.totalLikes / r.totalViews) * 100)
-            : 0,
-        price: r.price || 0,
-        host: r.host || "Unknown",
-        location: r.location || "",
-        rank: idx + 1,
-      }));
+    const processed = data.trends.map((r, idx) => ({
+      id: r.roomId || idx,
+      name: r.roomName || r.title || `Room ${idx + 1}`,
+      views: r.totalViews || 0,
+      likes: r.totalLikes || 0,
+      engagement:
+        r.totalViews > 0
+          ? Math.round((r.totalLikes / r.totalViews) * 100)
+          : 0,
+      price: r.price || 0,
+      host: r.host || "Unknown",
+      location: r.location || "",
+      rank: idx + 1,
+    }));
 
-      setTrendData(processed);
-      setSummary(data.summary);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    setTrendData(processed);
+    setSummary(data.summary);
+    setError(null);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     fetchTrendsData();

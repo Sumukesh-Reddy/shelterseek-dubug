@@ -26,10 +26,14 @@ function HostDetails() {
         const res = await fetch(`http://localhost:3001/api/rooms/host/${email}`);
         const data = await res.json();
 
-        // Support both shapes: { rooms: [...], roomCount } or array directly
-        if (data && Array.isArray(data.rooms)) {
+        // Handle the API response format from roomController
+        if (data && data.rooms) {
           setHostRooms(data.rooms);
           setRoomCount(data.roomCount ?? data.rooms.length ?? 0);
+        } else if (data && data.data && Array.isArray(data.data)) {
+          // If response has data property with array
+          setHostRooms(data.data);
+          setRoomCount(data.data.length);
         } else if (Array.isArray(data)) {
           setHostRooms(data);
           setRoomCount(data.length);
