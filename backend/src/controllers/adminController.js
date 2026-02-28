@@ -1,9 +1,179 @@
-const { Traveler, Host } = require('../models/User');
+const { Traveler, Host, Manager } = require('../models/User');
 const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const { sendManagerWelcomeEmail } = require('../services/emailService');
 const mongoose = require('mongoose');
+
+const normalizeDigits = (value) => String(value || '').replace(/\D/g, '');
+
+const normalizeGender = (value) => {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+};
+
+const normalizeDepartment = (value) => {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+};
+
+const buildUsernameBase = (value) => {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '.')
+    .replace(/\.+/g, '.')
+    .replace(/^\.+|\.+$/g, '');
+};
+
+const generateUniqueManagerUsername = async (name, explicitUsername) => {
+  const baseFromInput = buildUsernameBase(explicitUsername);
+  let base = baseFromInput || buildUsernameBase(name);
+  if (!base) base = 'manager';
+
+  let candidate = base;
+  let suffix = 0;
+
+  while (await Manager.exists({ username: candidate })) {
+    suffix += 1;
+    candidate = `${base}${suffix}`;
+    if (suffix > 50) {
+      candidate = `${base}${Math.floor(1000 + Math.random() * 9000)}`;
+      break;
+    }
+  }
+
+  return candidate;
+};
+
+// Register manager (admin only)
+exports.registerManager = catchAsync(async (req, res, next) => {
+  const {
+    name,
+    email,
+    phone,
+    dob,
+    gender,
+    aadhaar,
+    pan,
+    role,
+    department,
+    joiningDate,
+    username,
+    password,
+    sendWelcomeEmail
+  } = req.body;
+
+  if (!name || !email || !phone || !dob || !gender || !aadhaar || !pan || !department || !joiningDate || !password) {
+    return next(new AppError('All fields required', 400));
+  }
+
+  const normalizedPhone = normalizeDigits(phone);
+  if (!/^\d{10}$/.test(normalizedPhone)) {
+    return next(new AppError('Phone number must be 10 digits', 400));
+  }
+
+  const normalizedAadhaar = normalizeDigits(aadhaar);
+  if (!/^\d{12}$/.test(normalizedAadhaar)) {
+    return next(new AppError('Aadhaar must be 12 digits', 400));
+  }
+
+  const normalizedPan = String(pan || '').trim().toUpperCase();
+  if (!/^[A-Z]{5}\d{4}[A-Z]$/.test(normalizedPan)) {
+    return next(new AppError('PAN must be in format ABCDE1234F', 400));
+  }
+
+  const normalizedGender = normalizeGender(gender);
+  const allowedGenders = ['Male', 'Female', 'Other'];
+  if (!allowedGenders.includes(normalizedGender)) {
+    return next(new AppError('Invalid gender', 400));
+  }
+
+  const normalizedDepartment = normalizeDepartment(department);
+  const allowedDepartments = ['Bookings', 'Listings', 'Support', 'Finance'];
+  if (!allowedDepartments.includes(normalizedDepartment)) {
+    return next(new AppError('Invalid department', 400));
+  }
+
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!normalizedEmail) {
+    return next(new AppError('Email required', 400));
+  }
+
+  if (String(password).length < 8) {
+    return next(new AppError('Password must be at least 8 characters', 400));
+  }
+
+  const existingUser =
+    await Manager.findOne({ email: normalizedEmail }) ||
+    await Traveler.findOne({ email: normalizedEmail }) ||
+    await Host.findOne({ email: normalizedEmail });
+
+  if (existingUser) {
+    return next(new AppError('User already exists', 400));
+  }
+
+  const finalUsername = await generateUniqueManagerUsername(name, username);
+
+  const manager = await Manager.create({
+    name: String(name).trim(),
+    email: normalizedEmail,
+    phone: normalizedPhone,
+    dob,
+    gender: normalizedGender,
+    aadhaar: normalizedAadhaar,
+    pan: normalizedPan,
+    role: role ? String(role).trim() : 'Manager',
+    department: normalizedDepartment,
+    joiningDate,
+    username: finalUsername,
+    password,
+    accountType: 'manager',
+    isVerified: true
+  });
+
+  let emailSent = false;
+  let emailError = null;
+  const shouldSendEmail = sendWelcomeEmail !== false && sendWelcomeEmail !== 'false';
+
+  if (shouldSendEmail) {
+    try {
+      const emailResult = await sendManagerWelcomeEmail(manager.email, {
+        name: manager.name,
+        email: manager.email,
+        username: manager.username,
+        password,
+        role: manager.role,
+        department: manager.department
+      });
+      if (emailResult && emailResult.success) {
+        emailSent = true;
+      } else {
+        emailError = emailResult?.message || 'Failed to send welcome email';
+      }
+    } catch (err) {
+      emailError = err.message || 'Failed to send welcome email';
+    }
+  }
+
+  res.status(201).json({
+    success: true,
+    message: 'Manager registered successfully',
+    manager: {
+      id: manager._id,
+      name: manager.name,
+      email: manager.email,
+      username: manager.username,
+      role: manager.role,
+      department: manager.department
+    },
+    emailSent,
+    ...(emailError ? { emailError } : {})
+  });
+});
 
 // Get dashboard stats
 exports.getDashboardStats = catchAsync(async (req, res) => {

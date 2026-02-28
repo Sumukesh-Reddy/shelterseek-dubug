@@ -159,7 +159,7 @@ const AdminNavbar = () => {
           <NavItem to="/admin_trends" icon={faFire} label="Trends" />
 
           <NavItem to="/admin_notifications" icon={faBell} label="Users" />
-
+          <NavItem to="/admin/managers/register" icon={faUser} label="Managers" />
          
         </ul>
       </nav>

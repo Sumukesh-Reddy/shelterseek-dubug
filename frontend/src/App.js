@@ -41,6 +41,7 @@ import RoleHome from './components/RoleHome';
 import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminManagerRegister from './pages/AdminManagerRegister/AdmminManagerRegister';
 
 function App() {
   return (
@@ -188,7 +189,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
+            <Route
+              path="/admin/managers/register"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminManagerRegister />
+                </ProtectedRoute>
+              }
+            />
             {/* Chat (any authenticated user) */}
             <Route
               path="/chat"

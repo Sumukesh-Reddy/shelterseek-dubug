@@ -4,13 +4,10 @@ const adminController = require('../controllers/adminController');
 const userController = require('../controllers/userController');
 const bookingController = require('../controllers/bookingController');
 const { authenticateToken, roleMiddleware } = require('../middleware/authMiddleware');
-
 const router = express.Router();
 
-// All admin routes require admin authentication
 router.use(authenticateToken, roleMiddleware.adminOnly);
 
-// Dashboard
 router.get('/dashboard/stats', adminController.getDashboardStats);
 router.get('/recent-activities', adminController.getRecentActivities);
 router.get('/trends', adminController.getTrends); 
@@ -22,5 +19,7 @@ router.get('/error-logs', adminController.getErrorLogs);
 
 // User management
 router.delete('/users/:id', adminController.deleteUser);
+// Manager management
+router.post('/managers', adminController.registerManager);
 
 module.exports = router;

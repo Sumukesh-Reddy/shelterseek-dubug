@@ -71,6 +71,7 @@ export const API_ENDPOINTS = {
     TRENDS: `${API_BASE_URL}/api/admin/trends`,
     ERROR_LOGS: `${API_BASE_URL}/api/admin/error-logs`,
     DELETE_USER: (id) => `${API_BASE_URL}/api/admin/users/${id}`,
+    MANAGERS_CREATE: `${API_BASE_URL}/api/admin/managers`,
   },
   
   // AI Chat endpoint

@@ -197,8 +197,80 @@ const sendTestEmail = async (toEmail) => {
   return { success: true, message: 'Test email sent!', testOtp };
 };
 
+const sendManagerWelcomeEmail = async (toEmail, details = {}) => {
+  const transporter = createTransporter();
+  if (!transporter) {
+    console.warn('Email not configured, skipping manager welcome email');
+    return { success: false, message: 'Email not configured' };
+  }
+
+  const managerName = details.name || 'Manager';
+  const managerUsername = details.username || '';
+  const managerRole = details.role || 'Manager';
+  const managerDepartment = details.department || '';
+  const managerEmail = details.email || toEmail;
+  const managerPassword = details.password || '';
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: toEmail,
+    subject: 'Welcome to ShelterSeek - Manager Access',
+    html: `
+      <div style="
+          max-width: 520px;
+          margin: auto;
+          padding: 24px;
+          background: #ffffff;
+          border-radius: 12px;
+          font-family: Arial, Helvetica, sans-serif;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+          color: #333;
+          line-height: 1.6;
+      ">
+          <h2 style="
+              text-align: center;
+              color: #d72d6e;
+              margin-bottom: 8px;
+              font-size: 24px;
+          ">
+              Welcome to ShelterSeek
+          </h2>
+          <p style="font-size: 15px; margin-bottom: 16px;">
+              Hello ${managerName},
+          </p>
+          <p style="font-size: 15px; margin-bottom: 16px;">
+              Your manager account has been created successfully.
+          </p>
+          <div style="
+              background: #fff1f6;
+              border-left: 4px solid #d72d6e;
+              padding: 12px 16px;
+              border-radius: 8px;
+              margin-bottom: 18px;
+          ">
+              <p style="margin: 6px 0;"><strong>Role:</strong> ${managerRole}</p>
+              ${managerDepartment ? `<p style="margin: 6px 0;"><strong>Department:</strong> ${managerDepartment}</p>` : ''}
+              ${managerEmail ? `<p style="margin: 6px 0;"><strong>Email:</strong> ${managerEmail}</p>` : ''}
+              ${managerUsername ? `<p style="margin: 6px 0;"><strong>Username:</strong> ${managerUsername}</p>` : ''}
+              ${managerPassword ? `<p style="margin: 6px 0;"><strong>Password:</strong> ${managerPassword}</p>` : ''}
+          </div>
+          <p style="font-size: 14px; color:#555;">
+              Please sign in and change this password after your first login.
+          </p>
+          <p style="font-size: 13px; color:#777; margin-top: 24px; text-align: center;">
+              Team ShelterSeek
+          </p>
+      </div>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+  return { success: true, message: 'Welcome email sent' };
+};
+
 module.exports = {
   sendOTPEmail,
   sendBookingConfirmationEmail,
-  sendTestEmail
+  sendTestEmail,
+  sendManagerWelcomeEmail
 };
