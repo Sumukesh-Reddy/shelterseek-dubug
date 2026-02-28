@@ -38,12 +38,24 @@ mongoose
     // Initialize Socket.IO with the setup function
     const setupSocket = require("./src/sockets/chatSocket");
     setupSocket(io);
+    // Make io available via the Express app if other modules expect it
+    app.set('io', io);
 
     // Start server
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📡 Environment: ${process.env.NODE_ENV || "development"}`);
       console.log(`⚡ Socket.IO ready at: http://localhost:${PORT}`);
+    });
+
+    // Graceful listen error handling (e.g. EADDRINUSE)
+    server.on('error', (err) => {
+      if (err && err.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Please stop the process using it or change the PORT.`);
+        process.exit(1);
+      }
+      console.error('Server error:', err);
+      process.exit(1);
     });
 
     // Handle unhandled rejections

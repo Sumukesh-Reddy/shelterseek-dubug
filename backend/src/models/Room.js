@@ -30,19 +30,67 @@ const roomSchema = new mongoose.Schema({
   likes: { type: Number, default: 0 },
   unavailableDates: [Date],
   amenities: [String],
-  images: [mongoose.Schema.Types.ObjectId],
+  images: [String],
   reviews: [Object],
   createdAt: { type: Date, default: Date.now }
 }, { collection: 'RoomData' });
 
-// Create model with hostAdminConnection
+// Drop the problematic 'id' index if it exists
+roomSchema.post('init', async function() {
+  try {
+    const indexes = await this.collection.getIndexes();
+    if (indexes.id_1) {
+      console.log('🔄 Dropping problematic id index...');
+      await this.collection.dropIndex('id_1');
+      console.log('✅ Dropped id_1 index');
+    }
+  } catch (err) {
+    // Index might not exist, that's OK
+  }
+});
+
+// Initialize Room model - check if global connection exists
 let Room;
+let connectionInitialized = false;
+
 if (global.hostAdminConnection) {
-  Room = global.hostAdminConnection.model('RoomData', roomSchema);
-} else {
-  // Fallback for when connection isn't global yet
-  const connection = mongoose.createConnection(process.env.HOST_ADMIN_URI);
-  Room = connection.model('RoomData', roomSchema);
+  try {
+    Room = global.hostAdminConnection.model('RoomData', roomSchema);
+    connectionInitialized = true;
+    console.log('✅ Room model initialized with global.hostAdminConnection');
+  } catch (err) {
+    if (err.name === 'OverwriteModelError') {
+      Room = global.hostAdminConnection.model('RoomData');
+      connectionInitialized = true;
+    }
+  }
+}
+
+// If global connection not available, create fallback
+if (!connectionInitialized) {
+  console.warn('⚠️ global.hostAdminConnection not immediately available, creating fallback connection');
+  const fallbackConnection = mongoose.createConnection(process.env.HOST_ADMIN_URI, {
+    retryWrites: true,
+    w: 'majority'
+  });
+  
+  fallbackConnection.on('connected', () => {
+    console.log('✅ Fallback Room connection established');
+  });
+  
+  fallbackConnection.on('error', (err) => {
+    console.error('❌ Fallback Room connection error:', err);
+  });
+  
+  try {
+    Room = fallbackConnection.model('RoomData', roomSchema);
+  } catch (err) {
+    if (err.name === 'OverwriteModelError') {
+      Room = fallbackConnection.model('RoomData');
+    } else {
+      console.error('❌ Error creating fallback Room model:', err);
+    }
+  }
 }
 
 module.exports = Room;

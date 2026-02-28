@@ -915,11 +915,13 @@ const HostIndex = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Draft auto-save removed to avoid accidental server updates when navigating
+  // between steps. Final create/update happens on form submit (step 5).
+
   const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 5));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (!validateStep(currentStep)) return;
+    setCurrentStep(prev => Math.min(prev + 1, 5));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePrev = () => {
@@ -929,6 +931,7 @@ const HostIndex = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.debug('handleSubmit called - currentStep:', currentStep, 'listingId:', listingId);
     
     // Only allow submission on step 5
     if (currentStep !== 5) {
@@ -981,15 +984,17 @@ const HostIndex = () => {
       
       const token = localStorage.getItem('token');
       
+      // Let axios set Content-Type (including boundary) for multipart data
       const response = await axios({
         method,
         url,
         data,
-        headers: { 
-          'Content-Type': 'multipart/form-data',
+        headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      console.debug('handleSubmit response:', response && response.data && response.data.success);
 
       if (response.data.success) {
         alert(listingId ? '✅ Listing updated successfully!' : '✅ Listing created successfully!');
@@ -1190,7 +1195,7 @@ const HostIndex = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => { e.preventDefault(); }}>
             {getStepContent()}
 
             {/* Map preview for step 2 */}
@@ -1238,7 +1243,8 @@ const HostIndex = () => {
                 </button>
               ) : (
                 <button 
-                  type="submit" 
+                  type="button"
+                  onClick={handleSubmit}
                   className="nav-btn submit"
                   disabled={isSubmitting || isRefreshing}
                   style={{ marginLeft: 'auto' }}
@@ -1255,9 +1261,9 @@ const HostIndex = () => {
       {isSubmitting && (
         <div className="loading-overlay">
           <div className="loading-spinner"></div>
-          <p style={{ marginTop: '1rem', color: '#e91e63', fontWeight: 'bold' }}>
+            <p style={{ marginTop: '1rem', color: '#e91e63', fontWeight: 'bold' }}>
             {listingId ? 'Updating listing...' : 'Creating listing...'}
-          </p>
+            </p>
         </div>
       )}
 

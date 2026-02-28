@@ -92,71 +92,62 @@ export default function HostRequests() {
       });
   }, [requests, search, statusFilter]);
 
- // In HostRequests.jsx, update the updateStatus function:
-const updateStatus = async (listingId, nextStatus) => {
-  try {
-    console.log('Updating status:', { listingId, nextStatus });
-    
-    // Map status for backend
-    const statusMap = {
-      'Approved': 'verified',
-      'Rejected': 'rejected',
-      'pending': 'pending'
-    };
-    
-    const backendStatus = statusMap[nextStatus] || 'pending';
-    
-    // Try PUT first
-    let response = await fetch(`${API_BASE}/api/rooms/listings/${listingId}/status`, {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json'
-        // NO Authorization header
-      },
-      body: JSON.stringify({ status: backendStatus })
-    });
-    
-    // If PUT fails, try PATCH
-    if (!response.ok) {
-      console.log('PUT failed, trying PATCH...');
-      response = await fetch(`${API_BASE}/api/rooms/listings/${listingId}/status`, {
+  const updateStatus = async (listingId, nextStatus) => {
+    try {
+      console.log('Updating status:', { listingId, nextStatus });
+  
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (!token) {
+        throw new Error('Missing admin token. Please log in again.');
+      }
+      
+      // Map status for backend
+      const statusMap = {
+        'Approved': 'verified',
+        'Rejected': 'rejected',
+        'pending': 'pending'
+      };
+      
+      const backendStatus = statusMap[nextStatus] || 'pending';
+  
+      const response = await fetch(`${API_BASE}/api/rooms/listings/${listingId}/status`, {
         method: 'PATCH',
         headers: { 
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ status: backendStatus })
       });
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error:', errorText);
+        throw new Error(`Failed to update status: ${response.status}`);
+      }
+      
+      const json = await response.json();
+      console.log('Update response:', json);
+      
+      if (!json.success) {
+        throw new Error(json.message || 'Update failed');
+      }
+      
+      const updated = json.data?.listing || { ...selected, status: backendStatus };
+      
+      // Update the local state
+      setRequests((prev) => prev.map((r) => (r._id === updated._id ? updated : r)));
+      setSelected(updated);
+      
+      // Show success message
+      alert(`Status updated to ${nextStatus} successfully!`);
+      
+    } catch (err) {
+      console.error('Update status error:', err);
+      alert(err.message || 'Status update failed. Please try again.');
     }
-    
-    console.log('Response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server error:', errorText);
-      throw new Error(`Failed to update status: ${response.status}`);
-    }
-    
-    const json = await response.json();
-    console.log('Update response:', json);
-    
-    if (!json.success) {
-      throw new Error(json.message || 'Update failed');
-    }
-    
-    const updated = json.data?.listing || { ...selected, status: backendStatus };
-    
-    // Update the local state
-    setRequests((prev) => prev.map((r) => (r._id === updated._id ? updated : r)));
-    setSelected(updated);
-    
-    // Show success message
-    alert(`Status updated to ${nextStatus} successfully!`);
-    
-  } catch (err) {
-    console.error('Update status error:', err);
-    alert(err.message || 'Status update failed. Please try again.');
-  }
-};
+  };
 
   return (
     <div className="host-requests-page">

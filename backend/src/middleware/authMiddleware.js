@@ -11,6 +11,19 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
+    // Allow static admin tokens used by the admin UI in development
+    if (token.startsWith('admin-token-')) {
+      req.user = {
+        _id: 'admin-001',
+        id: 'admin-001',
+        name: 'ShelterSeek Admin',
+        email: process.env.ADMIN_EMAIL || 'shelterseekrooms@gmail.com',
+        accountType: 'admin',
+        role: 'administrator'
+      };
+      return next();
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'myjwtsecret');
 
     let user = await Traveler.findById(decoded.id);

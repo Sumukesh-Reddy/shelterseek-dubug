@@ -7,105 +7,206 @@ const qrcode = require('qrcode');
 
 // Create listing
 exports.createListing = catchAsync(async (req, res, next) => {
-  const currentUser = JSON.parse(req.body.currentUser);
-  let imageIds = [];
+  try {
+    // Parse and validate currentUser (accept string or object)
+    let currentUser = req.body.currentUser;
+    if (!currentUser) {
+      return next(new AppError('User data is missing', 400));
+    }
+    if (typeof currentUser === 'string') {
+      try {
+        currentUser = JSON.parse(currentUser);
+      } catch (err) {
+        console.error('❌ Error parsing currentUser string:', err);
+        return next(new AppError('Invalid user data', 400));
+      }
+    }
 
-  // Upload images to GridFS
-  if (req.files && req.files.length > 0) {
-    imageIds = await uploadMultipleToGridFS(req.files);
+    if (!currentUser || !currentUser.name || !currentUser.email) {
+      return next(new AppError('User data is incomplete', 400));
+    }
+
+    // Upload images to GridFS
+    let imageIds = [];
+    if (req.files && req.files.length > 0) {
+      try {
+        imageIds = await uploadMultipleToGridFS(req.files);
+        console.log(`✅ Uploaded ${imageIds.length} images to GridFS`);
+      } catch (err) {
+        console.error('❌ Error uploading images to GridFS:', err);
+        return next(new AppError('Failed to upload images', 500));
+      }
+    }
+
+    // Validate and prepare listing data - ONLY include known fields to avoid duplicate key errors
+    const listingData = {
+      name: currentUser.name,
+      email: currentUser.email,
+      title: req.body.title || '',
+      description: req.body.description || '',
+      images: imageIds,
+      price: parseFloat(req.body.price) || 0,
+      maxdays: parseInt(req.body.maxdays) || 0,
+      capacity: parseInt(req.body.capacity) || 0,
+      bedrooms: parseInt(req.body.bedrooms) || 0,
+      beds: parseInt(req.body.beds) || 0,
+      roomSize: req.body.roomSize || '',
+      roomType: req.body.roomType || '',
+      propertyType: req.body.propertyType || '',
+      location: req.body.location || '',
+      discount: parseInt(req.body.discount) || 0,
+      amenities: req.body.amenities ? req.body.amenities.split(',').map(a => a.trim()).filter(a => a) : [],
+      coordinates: {
+        lat: parseFloat(req.body.latitude) || 0,
+        lng: parseFloat(req.body.longitude) || 0
+      },
+      roomLocation: req.body.roomLocation || '',
+      transportDistance: req.body.transportDistance || '',
+      hostGender: req.body.hostGender || '',
+      foodFacility: req.body.foodFacility || '',
+      likes: 0,
+      booking: false,
+      reviews: [],
+      unavailableDates: []
+    };
+
+    // Handle unavailable dates
+    if (req.body.unavailableDates) {
+      try {
+        const dates = Array.isArray(req.body.unavailableDates) 
+          ? req.body.unavailableDates 
+          : JSON.parse(req.body.unavailableDates);
+        listingData.unavailableDates = dates.map(date => new Date(date)).filter(d => !isNaN(d.getTime()));
+      } catch (err) {
+        console.error('⚠️ Error parsing unavailableDates:', err);
+        listingData.unavailableDates = [];
+      }
+    }
+
+    // Create and save the listing
+    const listing = new Room(listingData);
+    const savedListing = await listing.save();
+    console.log(`✅ Listing created successfully: ${savedListing._id}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Listing created successfully',
+      data: { listing: savedListing }
+    });
+  } catch (error) {
+    console.error('❌ Error in createListing:', error);
+    return next(new AppError(error.message || 'Failed to create listing', 500));
   }
-
-  const listingData = {
-    ...req.body,
-    name: currentUser.name,
-    email: currentUser.email,
-    images: imageIds,
-    price: parseFloat(req.body.price),
-    maxdays: parseInt(req.body.maxdays),
-    capacity: parseInt(req.body.capacity),
-    bedrooms: parseInt(req.body.bedrooms),
-    beds: parseInt(req.body.beds),
-    discount: parseInt(req.body.discount) || 0,
-    amenities: req.body.amenities ? req.body.amenities.split(',') : [],
-    coordinates: {
-      lat: parseFloat(req.body.latitude),
-      lng: parseFloat(req.body.longitude)
-    },
-    likes: 0,
-    booking: false,
-    reviews: [],
-    unavailableDates: req.body.unavailableDates ? 
-      (Array.isArray(req.body.unavailableDates) 
-        ? req.body.unavailableDates.map(date => new Date(date))
-        : JSON.parse(req.body.unavailableDates).map(date => new Date(date))
-      ) : []
-  };
-
-  const listing = new Room(listingData);
-  await listing.save();
-
-  res.status(201).json({
-    success: true,
-    message: 'Listing created successfully',
-    data: { listing }
-  });
 });
 
 // Update listing
 exports.updateListing = catchAsync(async (req, res, next) => {
-  const listingId = req.params.id;
-  const currentUser = JSON.parse(req.body.currentUser);
-  const removedImages = req.body.removedImages ? req.body.removedImages.split(',') : [];
-
-  // Delete removed images from GridFS
-  for (const imgId of removedImages) {
-    if (imgId) {
-      await deleteFromGridFS(imgId);
+  try {
+    const listingId = req.params.id;
+    
+    // Parse and validate currentUser (accept string or object)
+    let currentUser = req.body.currentUser;
+    if (!currentUser) {
+      return next(new AppError('User data is missing', 400));
     }
-  }
-
-  const newImageIds = [];
-  if (req.files && req.files.length > 0) {
-    const ids = await uploadMultipleToGridFS(req.files);
-    newImageIds.push(...ids);
-  }
-
-  const updatedData = {
-    ...req.body,
-    name: currentUser.name,
-    email: currentUser.email,
-    images: [...(req.body.existingImages ? JSON.parse(req.body.existingImages) : []), ...newImageIds],
-    price: parseFloat(req.body.price),
-    maxdays: parseInt(req.body.maxdays),
-    capacity: parseInt(req.body.capacity),
-    bedrooms: parseInt(req.body.bedrooms),
-    beds: parseInt(req.body.beds),
-    discount: parseInt(req.body.discount) || 0,
-    amenities: req.body.amenities ? req.body.amenities.split(',') : [],
-    coordinates: {
-      lat: parseFloat(req.body.latitude),
-      lng: parseFloat(req.body.longitude)
+    if (typeof currentUser === 'string') {
+      try {
+        currentUser = JSON.parse(currentUser);
+      } catch (err) {
+        console.error('❌ Error parsing currentUser string:', err);
+        return next(new AppError('Invalid user data', 400));
+      }
     }
-  };
-  
-  // Handle unavailable dates
-  if (req.body.unavailableDates) {
-    updatedData.unavailableDates = Array.isArray(req.body.unavailableDates)
-      ? req.body.unavailableDates.map(date => new Date(date))
-      : JSON.parse(req.body.unavailableDates).map(date => new Date(date));
-  }
 
-  const listing = await Room.findByIdAndUpdate(listingId, updatedData, { new: true });
-  
-  if (!listing) {
-    return next(new AppError('Listing not found', 404));
-  }
+    if (!currentUser || !currentUser.name || !currentUser.email) {
+      return next(new AppError('User data is incomplete', 400));
+    }
 
-  res.json({
-    success: true,
-    message: 'Listing updated successfully',
-    data: { listing }
-  });
+    const removedImages = req.body.removedImages ? req.body.removedImages.split(',').filter(id => id) : [];
+
+    // Delete removed images from GridFS
+    for (const imgId of removedImages) {
+      try {
+        await deleteFromGridFS(imgId);
+        console.log(`✅ Deleted image from GridFS: ${imgId}`);
+      } catch (err) {
+        console.error(`⚠️ Error deleting image ${imgId}:`, err);
+      }
+    }
+
+    // Upload new images to GridFS
+    const newImageIds = [];
+    if (req.files && req.files.length > 0) {
+      try {
+        const ids = await uploadMultipleToGridFS(req.files);
+        newImageIds.push(...ids);
+        console.log(`✅ Uploaded ${newImageIds.length} new images to GridFS`);
+      } catch (err) {
+        console.error('❌ Error uploading new images:', err);
+        return next(new AppError('Failed to upload images', 500));
+      }
+    }
+
+    // Prepare updated data - ONLY include known fields to avoid duplicate key errors
+    const existingImages = req.body.existingImages ? JSON.parse(req.body.existingImages) : [];
+    const updatedData = {
+      name: currentUser.name,
+      email: currentUser.email,
+      title: req.body.title || '',
+      description: req.body.description || '',
+      images: [...existingImages, ...newImageIds],
+      price: parseFloat(req.body.price) || 0,
+      maxdays: parseInt(req.body.maxdays) || 0,
+      capacity: parseInt(req.body.capacity) || 0,
+      bedrooms: parseInt(req.body.bedrooms) || 0,
+      beds: parseInt(req.body.beds) || 0,
+      roomSize: req.body.roomSize || '',
+      roomType: req.body.roomType || '',
+      propertyType: req.body.propertyType || '',
+      location: req.body.location || '',
+      discount: parseInt(req.body.discount) || 0,
+      amenities: req.body.amenities ? req.body.amenities.split(',').map(a => a.trim()).filter(a => a) : [],
+      coordinates: {
+        lat: parseFloat(req.body.latitude) || 0,
+        lng: parseFloat(req.body.longitude) || 0
+      },
+      roomLocation: req.body.roomLocation || '',
+      transportDistance: req.body.transportDistance || '',
+      hostGender: req.body.hostGender || '',
+      foodFacility: req.body.foodFacility || ''
+    };
+    
+    // Handle unavailable dates
+    if (req.body.unavailableDates) {
+      try {
+        const dates = Array.isArray(req.body.unavailableDates)
+          ? req.body.unavailableDates
+          : JSON.parse(req.body.unavailableDates);
+        updatedData.unavailableDates = dates.map(date => new Date(date)).filter(d => !isNaN(d.getTime()));
+      } catch (err) {
+        console.error('⚠️ Error parsing unavailableDates:', err);
+        updatedData.unavailableDates = [];
+      }
+    }
+
+    // Update the listing
+    const listing = await Room.findByIdAndUpdate(listingId, updatedData, { new: true });
+    
+    if (!listing) {
+      return next(new AppError('Listing not found', 404));
+    }
+
+    console.log(`✅ Listing updated successfully: ${listing._id}`);
+
+    res.json({
+      success: true,
+      message: 'Listing updated successfully',
+      data: { listing }
+    });
+  } catch (error) {
+    console.error('❌ Error in updateListing:', error);
+    return next(new AppError(error.message || 'Failed to update listing', 500));
+  }
 });
 
 // Get listing by ID

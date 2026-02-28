@@ -19,23 +19,26 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter
+// File filter - allow common images and video types
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const allowedImageExt = /jpeg|jpg|png|gif|webp/;
+  const allowedVideoExt = /mp4|mov|avi|mpeg|mpg|webm|ogg/;
+  const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
 
-  if (mimetype && extname) {
+  const isImage = allowedImageExt.test(ext) || file.mimetype.startsWith('image/');
+  const isVideo = allowedVideoExt.test(ext) || file.mimetype.startsWith('video/');
+
+  if (isImage || isVideo) {
     return cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed!'));
+    cb(new Error('Only image and video files are allowed!'));
   }
 };
 
-// Create multer instance
+// Create multer instance - allow larger uploads (up to 50MB per file)
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: fileFilter
 });
 
