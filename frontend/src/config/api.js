@@ -73,6 +73,16 @@ export const API_ENDPOINTS = {
     DELETE_USER: (id) => `${API_BASE_URL}/api/admin/users/${id}`,
     MANAGERS_CREATE: `${API_BASE_URL}/api/admin/managers`,
   },
+
+  // Manager endpoints
+  MANAGERS: {
+    LOGIN: `${API_BASE_URL}/api/managers/login`,
+    LISTINGS: `${API_BASE_URL}/api/managers/listings`,
+    LISTING_STATUS: (id) => `${API_BASE_URL}/api/managers/listings/${id}/status`,
+    LISTING_DELETE: (id) => `${API_BASE_URL}/api/managers/listings/${id}`,
+    PROFILE: `${API_BASE_URL}/api/managers/profile`,
+    CHANGE_PASSWORD: `${API_BASE_URL}/api/managers/change-password`,
+  },
   
   // AI Chat endpoint
   AI_CHAT: `${API_BASE_URL}/api/ai/chat`,

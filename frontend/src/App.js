@@ -41,8 +41,12 @@ import RoleHome from './components/RoleHome';
 import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ManagerDepartmentRoute from './components/ManagerDepartmentRoute';
 import AdminManagerRegister from './pages/AdminManagerRegister/AdmminManagerRegister';
 import ManagerLogin from './pages/Auth/ManagerLogin';
+import ManagerHome from './pages/ManagerHome/ManagerHome';
+import ManagerListings from './pages/ManagerListings/ManagerListings';
+import ManagerProfile from './pages/ManagerProfile/ManagerProfile';
 
 
 function App() {
@@ -142,6 +146,32 @@ function App() {
   }
 />
 
+            {/* Manager-only */}
+            <Route
+              path="/manager"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <ManagerHome />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/manager/listings"
+              element={
+                <ManagerDepartmentRoute allowedDepartments={['Listings']}>
+                  <ManagerListings />
+                </ManagerDepartmentRoute>
+              }
+            />
+            <Route
+              path="/manager/profile"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <ManagerProfile />
+                </ProtectedRoute>
+              }
+            />
+
 
             {/* Admin-only */}
             <Route
@@ -204,7 +234,7 @@ function App() {
             <Route
               path="/chat"
               element={
-                <ProtectedRoute allowedRoles={['traveller', 'host', 'admin']}>
+                <ProtectedRoute allowedRoles={['traveller', 'host', 'admin', 'manager']}>
                   <SocketProvider>
                     <ChatPage />
                   </SocketProvider>

@@ -288,6 +288,18 @@ exports.deleteListing = catchAsync(async (req, res, next) => {
     return next(new AppError('Listing not found', 404));
   }
 
+  const isOwnerHost =
+    req.user?.accountType === 'host' &&
+    String(listing.email || '').trim().toLowerCase() === String(req.user.email || '').trim().toLowerCase();
+  const isAdmin = req.user?.accountType === 'admin';
+  const isListingsManager =
+    req.user?.accountType === 'manager' &&
+    String(req.user.department || '').trim().toLowerCase() === 'listings';
+
+  if (!isOwnerHost && !isAdmin && !isListingsManager) {
+    return next(new AppError('Access denied', 403));
+  }
+
   // Delete images from GridFS
   for (const imgId of listing.images) {
     await deleteFromGridFS(imgId);

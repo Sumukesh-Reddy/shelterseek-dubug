@@ -24,6 +24,15 @@ const roomSchema = new mongoose.Schema({
     set: v => v ? v.toString().toLowerCase() : 'pending', 
     default: 'pending' 
   },
+  statusUpdatedAt: { type: Date, default: null },
+  reviewedAt: { type: Date, default: null },
+  reviewedBy: {
+    userId: { type: String, default: null },
+    name: { type: String, default: null },
+    email: { type: String, default: null },
+    accountType: { type: String, default: null },
+    department: { type: String, default: null }
+  },
   booking: { type: Boolean, default: false },
   bookedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Traveler', default: null },
   discount: { type: Number, default: 0 },

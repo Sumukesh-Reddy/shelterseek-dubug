@@ -124,13 +124,15 @@ app.set('views', path.join(__dirname, 'views'));
 
 // ========== ROUTES ==========
 app.use('/auth', authRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiChatRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api/managers', managerRoutes);
+app.use('/auth/manager', managerRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -174,14 +176,6 @@ app.get('/debug-env', (req, res) => {
   });
 });
 
-app.all('*', (req, res, next) => {
-
-  if (req.originalUrl.includes('/socket.io/')) {
-    return res.status(404).end();
-  }
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
-});
-
 app.get('/api/new-customers', (req, res) => {
   res.json({ success: true, data: [] });
 });
@@ -194,8 +188,12 @@ app.get('/api/revenue', (req, res) => {
   res.json({ success: true, totalRevenue: 0, thisMonthRevenue: 0, thisWeekRevenue: 0 });
 });
 
-app.use('/api/managers', managerRoutes);
-app.use('/auth/manager', managerRoutes); 
+app.all('*', (req, res, next) => {
+  if (req.originalUrl.includes('/socket.io/')) {
+    return res.status(404).end();
+  }
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
 
 // Global error handler
 app.use(globalErrorHandler);

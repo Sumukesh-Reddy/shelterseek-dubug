@@ -18,7 +18,8 @@ const UserList = ({ onSelectUser, onClose }) => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:3001/api/users/search`, {
+        // FIXED: Changed from /api/users/search to /api/chat/users/search
+        const response = await axios.get(`http://localhost:3001/api/chat/users/search`, {
           params: { query: searchQuery },
           headers: { Authorization: `Bearer ${token}` }
         });

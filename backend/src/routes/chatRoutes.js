@@ -1,3 +1,4 @@
+// routes/chatRoutes.js
 const express = require('express');
 const chatController = require('../controllers/chatController');
 const { authenticateToken, roleMiddleware } = require('../middleware/authMiddleware');
@@ -15,7 +16,7 @@ router.delete('/room/:roomId', roleMiddleware.authenticated, chatController.dele
 // Messages
 router.get('/messages/:roomId', roleMiddleware.authenticated, chatController.getMessages);
 
-// User search
+// User search - This endpoint should be here
 router.get('/users/search', roleMiddleware.authenticated, chatController.searchUsers);
 
 // Test endpoint

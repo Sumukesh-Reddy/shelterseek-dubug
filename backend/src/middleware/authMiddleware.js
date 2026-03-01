@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { Traveler, Host } = require('../models/User');
+const { Traveler, Host, Manager } = require('../models/User');
 
 // JWT authentication middleware
 const authenticateToken = async (req, res, next) => {
@@ -29,6 +29,9 @@ const authenticateToken = async (req, res, next) => {
     let user = await Traveler.findById(decoded.id);
     if (!user) {
       user = await Host.findById(decoded.id);
+    }
+    if (!user) {
+      user = await Manager.findById(decoded.id);
     }
 
     if (!user) {
@@ -92,7 +95,7 @@ const roleMiddleware = {
     next();
   },
     
-    managerOnly: (req, res, next) => {
+  managerOnly: (req, res, next) => {
       if (!isRequestAuthenticated(req)) {
         return res.status(401).json({ success: false, message: 'Authentication required' });
       }
@@ -103,6 +106,26 @@ const roleMiddleware = {
 
       next();
     },
+  managerDepartmentOnly: (...departments) => {
+    const allowedDepartments = departments.map((department) => String(department || '').trim().toLowerCase());
+
+    return (req, res, next) => {
+      if (!isRequestAuthenticated(req)) {
+        return res.status(401).json({ success: false, message: 'Authentication required' });
+      }
+
+      if (!req.user || req.user.accountType !== 'manager') {
+        return res.status(403).json({ success: false, message: 'Access denied: Manager only' });
+      }
+
+      const managerDepartment = String(req.user.department || '').trim().toLowerCase();
+      if (!allowedDepartments.includes(managerDepartment)) {
+        return res.status(403).json({ success: false, message: 'Access denied: Department restricted' });
+      }
+
+      next();
+    };
+  },
   authenticated: (req, res, next) => {
     if (!isRequestAuthenticated(req)) {
       return res.status(401).json({ success: false, message: 'Authentication required' });

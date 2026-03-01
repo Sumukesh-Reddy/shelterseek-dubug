@@ -4,10 +4,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from "react-redux";
 import { setUser } from "../../store/slices/userSlice";
 import './Login.css';
+import { API_ENDPOINTS } from '../../config/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { getManagerHomePath } from '../../utils/managerRouting';
 
 const ManagerLogin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { setAuthenticatedSession } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +24,7 @@ const ManagerLogin = () => {
     setError('');
 
     try {
-      const loginRes = await fetch('http://localhost:3001/api/managers/login', {
+      const loginRes = await fetch(API_ENDPOINTS.MANAGERS.LOGIN, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -37,9 +41,7 @@ const ManagerLogin = () => {
         throw new Error('Invalid manager credentials');
       }
       
-      // Store auth data
-      localStorage.setItem('token', loginData.token);
-      localStorage.setItem('user', JSON.stringify(loginData.user));
+      setAuthenticatedSession(loginData.token, loginData.user);
       
       // Dispatch to Redux
       dispatch(setUser(loginData.user));
@@ -52,9 +54,9 @@ const ManagerLogin = () => {
         name: loginData.user.name,
         department: loginData.user.department
       }));
+      sessionStorage.setItem('token', loginData.token);
       
-      // Redirect to manager dashboard
-      navigate('/manager-dashboard');
+      navigate(getManagerHomePath(loginData.user.department), { replace: true });
       
     } catch (err) {
       setError(err.message);

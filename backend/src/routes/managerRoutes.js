@@ -14,7 +14,24 @@ router.use(authenticateToken);
 
 // Manager only routes
 router.get('/dashboard/stats', roleMiddleware.managerOnly, managerController.getDashboardStats);
+router.get('/profile', roleMiddleware.managerOnly, managerController.getManagerProfile);
 router.patch('/profile', roleMiddleware.managerOnly, managerController.updateManagerProfile);
+router.patch('/change-password', roleMiddleware.managerOnly, managerController.changeManagerPassword);
+router.get(
+  '/listings',
+  roleMiddleware.managerOnly,
+  managerController.getListingsDashboard
+);
+router.patch(
+  '/listings/:listingId/status',
+  roleMiddleware.managerOnly,
+  managerController.updateManagedListingStatus
+);
+router.delete(
+  '/listings/:id',
+  roleMiddleware.managerOnly,
+  managerController.deleteManagedListing
+);
 
 // Admin only routes
 router.get('/all', roleMiddleware.adminOnly, managerController.getAllManagers);

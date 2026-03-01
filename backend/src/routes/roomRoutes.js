@@ -36,7 +36,11 @@ router.put('/listings/:id',
 router.patch('/listings/:listingId/status',
   authenticateToken,
   (req, res, next) => {
-    if (req.user.accountType === 'host' || req.user.accountType === 'admin') {
+    const isListingsManager =
+      req.user.accountType === 'manager' &&
+      String(req.user.department || '').trim().toLowerCase() === 'listings';
+
+    if (req.user.accountType === 'host' || req.user.accountType === 'admin' || isListingsManager) {
       return next();
     }
     return res.status(403).json({ success: false, message: 'Access denied' });
@@ -46,7 +50,16 @@ router.patch('/listings/:listingId/status',
 
 router.delete('/listings/:id',
   authenticateToken,
-  roleMiddleware.hostOnly,
+  (req, res, next) => {
+    const isListingsManager =
+      req.user.accountType === 'manager' &&
+      String(req.user.department || '').trim().toLowerCase() === 'listings';
+
+    if (req.user.accountType === 'host' || req.user.accountType === 'admin' || isListingsManager) {
+      return next();
+    }
+    return res.status(403).json({ success: false, message: 'Access denied' });
+  },
   hostController.deleteListing
 );
 

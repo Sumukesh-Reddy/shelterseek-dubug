@@ -258,12 +258,23 @@ exports.updateListingStatus = catchAsync(async (req, res) => {
   };
   
   const mappedStatus = statusMap[status] || status;
+  const updatePayload = {
+    status: mappedStatus,
+    statusUpdatedAt: new Date()
+  };
 
-  const room = await Room.findByIdAndUpdate(
-    listingId,
-    { status: mappedStatus },
-    { new: true }
-  );
+  if (mappedStatus === 'verified' || mappedStatus === 'rejected') {
+    updatePayload.reviewedAt = new Date();
+    updatePayload.reviewedBy = {
+      userId: String(req.user?._id || req.user?.id || ''),
+      name: req.user?.name || '',
+      email: req.user?.email || '',
+      accountType: req.user?.accountType || '',
+      department: req.user?.department || ''
+    };
+  }
+
+  const room = await Room.findByIdAndUpdate(listingId, updatePayload, { new: true });
 
   if (!room) {
     return res.status(404).json({ 
