@@ -271,22 +271,16 @@ exports.getMessages = catchAsync(async (req, res) => {
   });
 });
 
-// controllers/chatController.js - Update searchUsers function
+// Search users for chat
 exports.searchUsers = catchAsync(async (req, res) => {
-  console.log('🔍 Search users called with query:', req.query.query);
-  console.log('User ID:', req.user?._id);
-  
   const { query } = req.query;
 
   if (!query || query.trim().length < 2) {
-    console.log('Search query too short');
     return res.json({ success: true, users: [] });
   }
 
   const searchTerm = query.trim().toLowerCase();
   const isEmailSearch = searchTerm.includes('@');
-  
-  console.log('Search term:', searchTerm, 'Is email search:', isEmailSearch);
   
   const emailRegex = isEmailSearch 
     ? { $regex: `^${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
@@ -315,8 +309,6 @@ exports.searchUsers = catchAsync(async (req, res) => {
     .limit(10)
     .lean()
   ]);
-
-  console.log(`Found ${travelers.length} travelers and ${hosts.length} hosts`);
 
   const seenIds = new Set();
   const seenEmails = new Set();
@@ -354,8 +346,6 @@ exports.searchUsers = catchAsync(async (req, res) => {
     })
     .slice(0, 20);
 
-  console.log(`Returning ${users.length} unique users`);
-  
   res.json({ 
     success: true, 
     users, 

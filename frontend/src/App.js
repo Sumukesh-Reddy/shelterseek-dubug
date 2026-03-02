@@ -47,7 +47,13 @@ import ManagerLogin from './pages/Auth/ManagerLogin';
 import ManagerHome from './pages/ManagerHome/ManagerHome';
 import ManagerListings from './pages/ManagerListings/ManagerListings';
 import ManagerProfile from './pages/ManagerProfile/ManagerProfile';
-
+import FinanceLayout from "./components/financeNavbar/FinanceLayout";
+import UserRevenue from "./pages/finance/UserRevenue";
+import UserFinanceDetail from "./pages/finance/UserFinanceDetail";
+import FinanceDashboard from './pages/finance/FinanceDashboard';
+import HostRevenue from './pages/finance/HostRevenue';
+import HostFinanceDetail from './pages/finance/HostFinanceDetail';
+import FinanceManagerProfile from './pages/finance/FinanceManagerProfile';
 
 function App() {
   return (
@@ -82,6 +88,14 @@ function App() {
             <Route path="/traveler/:email/bookings" element={<TravelerDetails />} />
             <Route path="/host/:email" element={<HostDetails />} />
             <Route path="/bookedhistory" element={<BookedHistory />} />
+            <Route path="/finance" element={<FinanceLayout />}>
+  <Route path="users" element={<UserRevenue />} />
+  <Route path="user/:id" element={<UserFinanceDetail />} />
+  <Route path="dashboard" element={<FinanceDashboard />} />
+  <Route path="hosts" element={<HostRevenue />} />
+  <Route path="host/:email" element={<HostFinanceDetail />} />
+  <Route path="profile" element={<FinanceManagerProfile />} />
+</Route>
             {/* <Route path="/admin/hostrequests" element={<HostRequests />} /> */}
             {/* Traveler-only */}
             <Route

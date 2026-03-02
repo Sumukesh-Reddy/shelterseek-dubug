@@ -80,70 +80,69 @@ const ChatPage = () => {
     if (processedStartChatRef.current) return;
     if (loading) return;
 
-    // In ChatPage.js, update the openChatByEmail function
-const openChatByEmail = async () => {
-  try {
-    processedStartChatRef.current = true;
+    const openChatByEmail = async () => {
+      try {
+        processedStartChatRef.current = true;
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('No authentication token found');
-      alert('Please login to message the host');
-      return;
-    }
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No authentication token found');
+          alert('Please login to message the host');
+          return;
+        }
 
-    // FIXED: Changed from /api/users/search to /api/chat/users/search
-    const resp = await axios.get(`${API_URL}/api/chat/users/search`, {
-      params: { query: email },
-      headers: { Authorization: `Bearer ${token}` }
-    });
+        const resp = await axios.get(`${API_URL}/api/users/search`, {
+          params: { query: email },
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-    if (!resp.data?.success) {
-      console.error('Search API error:', resp.data);
-      alert(`Could not find host with email: ${email}. Please make sure the host is registered.`);
-      window.history.replaceState({}, document.title);
-      return;
-    }
+        if (!resp.data?.success) {
+          console.error('Search API error:', resp.data);
+          alert(`Could not find host with email: ${email}. Please make sure the host is registered.`);
+          window.history.replaceState({}, document.title);
+          return;
+        }
 
-    const users = resp.data?.users || [];
-    const exactUser = users.find(u => {
-      const userEmail = (u.email || '').trim().toLowerCase();
-      return userEmail === email.toLowerCase();
-    });
+        const users = resp.data?.users || [];
+        const exactUser = users.find(u => {
+          const userEmail = (u.email || '').trim().toLowerCase();
+          return userEmail === email.toLowerCase();
+        });
 
-    if (!exactUser?._id) {
-      console.warn('No user found for email:', email);
-      alert(`Host with email "${email}" not found. They may need to create an account first.`);
-      window.history.replaceState({}, document.title);
-      return;
-    }
+        if (!exactUser?._id) {
+          console.warn('No user found for email:', email);
+          alert(`Host with email "${email}" not found. They may need to create an account first.`);
+          window.history.replaceState({}, document.title);
+          return;
+        }
 
-    const existingRoom = rooms.find(r =>
-      Array.isArray(r.participants) &&
-      r.participants.some(p => {
-        const participantId = p?._id?.toString();
-        const participantEmail = (p?.email || '').trim().toLowerCase();
-        return (
-          participantId === exactUser._id.toString() ||
-          participantEmail === email.toLowerCase()
+        const existingRoom = rooms.find(r =>
+          Array.isArray(r.participants) &&
+          r.participants.some(p => {
+            const participantId = p?._id?.toString();
+            const participantEmail = (p?.email || '').trim().toLowerCase();
+            return (
+              participantId === exactUser._id.toString() ||
+              participantEmail === email.toLowerCase()
+            );
+          })
         );
-      })
-    );
 
-    if (existingRoom?._id) {
-      setSelectedRoom(existingRoom);
-      fetchMessages(existingRoom._id);
-    } else {
-      await handleStartNewChat(exactUser._id);
-    }
-  } catch (error) {
-    console.error('Failed to start chat with host by email:', error);
-    const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
-    alert(`Failed to open chat: ${errorMsg}`);
-  } finally {
-    window.history.replaceState({}, document.title);
-  }
-};
+        if (existingRoom?._id) {
+          setSelectedRoom(existingRoom);
+          fetchMessages(existingRoom._id);
+        } else {
+          await handleStartNewChat(exactUser._id);
+        }
+      } catch (error) {
+        console.error('Failed to start chat with host by email:', error);
+        const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+        alert(`Failed to open chat: ${errorMsg}`);
+      } finally {
+        window.history.replaceState({}, document.title);
+      }
+    };
+
     openChatByEmail();
   }, [location.state, rooms, loading]);
 

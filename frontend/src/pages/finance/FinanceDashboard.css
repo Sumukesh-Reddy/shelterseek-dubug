@@ -1,0 +1,82 @@
+.dashboard-container {
+  padding: 20px;
+}
+
+.kpi-grid {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.kpi-card {
+  flex: 1;
+  min-width: 200px;
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+.kpi-card h4 {
+  margin-bottom: 10px;
+}
+
+.kpi-card p {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.revenue { background: #2563eb; }
+.refund { background: #dc2626; }
+.net { background: #16a34a; }
+.booking { background: #7c3aed; }
+
+.top-users table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.top-users th,
+.top-users td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.top-users thead {
+  background: #1f2937;
+  color: white;
+}
+.commission { background: #0ea5e9; }
+.rate { background: #f59e0b; }
+
+.chart-section {
+  background: white;
+  padding: 20px;
+  margin: 40px 0;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.recent-bookings table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recent-bookings th,
+.recent-bookings td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.recent-bookings thead {
+  background: #1f2937;
+  color: white;
+}

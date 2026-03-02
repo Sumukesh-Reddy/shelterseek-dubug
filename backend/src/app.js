@@ -24,6 +24,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const aiChatRoutes = require('./routes/aiChatRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 const managerRoutes = require('./routes/managerRoutes');
+const financeRoutes = require('./routes/financeRoutes');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -124,15 +126,16 @@ app.set('views', path.join(__dirname, 'views'));
 
 // ========== ROUTES ==========
 app.use('/auth', authRoutes);
-app.use('/api/chat', chatRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiChatRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/managers', managerRoutes);
 app.use('/auth/manager', managerRoutes);
+app.use("/api/finance", financeRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -7,5 +7,9 @@ export const getManagerHomePath = (department) => {
     return '/manager/listings';
   }
 
+  if (normalizedDepartment === 'finance') {
+    return '/finance/dashboard';
+  }
+
   return '/manager';
 };
