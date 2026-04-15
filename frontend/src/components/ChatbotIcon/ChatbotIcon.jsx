@@ -1,11 +1,27 @@
-// components/ChatbotIcon/ChatbotIcon.jsx
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import HotelChatbot from '../../pages/HotelChatBot/HotelChatbot';
 import './ChatbotIcon.css';
 
 const ChatbotIcon = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const location = useLocation();
+
+  // ONLY show on traveler/hotel related pages OR if user is a traveler
+  const userRole = localStorage.getItem('userRole');
+  const isTraveler = userRole === 'traveller' || userRole === 'traveler';
+  
+  // Also check if we are on a page that should definitely NOT have it (admin, host dashboards)
+  const isDashboardPage = location.pathname.toLowerCase().includes('admin') || 
+                         location.pathname.toLowerCase().includes('dashboard') ||
+                         location.pathname.toLowerCase().includes('manager') ||
+                         location.pathname.toLowerCase().includes('host');
+
+  // If not a traveler OR if it's a dashboard page, don't show
+  if (!isTraveler || isDashboardPage) {
+    return null;
+  }
 
   const toggleChatbot = () => {
     setIsOpen(!isOpen);

@@ -15,7 +15,7 @@ const uploadToGridFS = async (file, bucketName = 'images') => {
     });
 
     return new Promise((resolve, reject) => {
-      let finished = false;
+      let resolved = false;
       fileStream.pipe(uploadStream)
         .on('error', (err) => {
           console.error('❌ Upload stream error:', err && err.message ? err.message : err);
@@ -25,13 +25,18 @@ const uploadToGridFS = async (file, bucketName = 'images') => {
             // Keep the file on disk (multer already saved it to uploads dir)
             const fallbackName = path.basename(file.path);
             console.warn(`⚠️ Falling back to local storage for ${file.originalname} -> ${fallbackName}`);
-            finished = true;
+            resolved = true;
             return resolve(fallbackName);
           }
           return reject(err);
         })
         .on('finish', () => {
-          finished = true;
+          // IMPORTANT: If error already resolved with fallback, do NOT delete the local file
+          if (resolved) {
+            console.log(`⏩ Skipping finish handler — already resolved via fallback for ${file.originalname}`);
+            return;
+          }
+          resolved = true;
           // Clean up temp file (since we've stored in GridFS)
           try {
             if (fs.existsSync(file.path)) {

@@ -44,6 +44,13 @@ const roomSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }, { collection: 'RoomData' });
 
+// DATABASE OPTIMIZATION: Indexing
+roomSchema.index({ status: 1, createdAt: -1 });
+roomSchema.index({ location: 'text', title: 'text', description: 'text' });
+roomSchema.index({ price: 1 });
+roomSchema.index({ capacity: 1, roomType: 1 });
+
+
 // Drop the problematic 'id' index if it exists
 roomSchema.post('init', async function() {
   try {

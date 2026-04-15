@@ -186,6 +186,28 @@ const styles = {
   suggestionsStrongSuccess: { color: '#16a34a', fontWeight: 600 },
   suggestionsList: { margin: '0.5rem 0 0 0', paddingLeft: '1.25rem' },
   suggestionsListItem: { marginBottom: '0.25rem', color: '#6b7280', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: '0.5rem' },
+  statusFilterContainer: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginBottom: '1rem',
+    flexWrap: 'wrap'
+  },
+  statusFilterBtn: {
+    padding: '0.5rem 1rem',
+    borderRadius: '2rem',
+    border: '1px solid #e5e7eb',
+    background: 'white',
+    color: '#4b5563',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    transition: 'all 0.2s',
+    fontWeight: 500,
+  },
+  statusFilterBtnActive: {
+    backgroundColor: '#d72d6e',
+    color: 'white',
+    borderColor: '#d72d6e',
+  },
 };
 
 const HostDashboard = () => {
@@ -386,14 +408,18 @@ const HostDashboard = () => {
   const handleDelete = async (listingId) => {
     if (!window.confirm('Are you sure you want to delete this listing?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/api/rooms/listings/${listingId}`);
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      await axios.delete(`${API_BASE_URL}/api/rooms/listings/${listingId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setListings(prev => prev.filter(l => l._id !== listingId));
       // Auto refresh after delete
       setTimeout(() => {
         fetchListings(currentUser?.email);
       }, 500);
     } catch (error) {
-      window.alert('Failed to delete listing');
+      console.error('Delete error:', error.response?.data || error.message);
+      window.alert('Failed to delete listing: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -736,6 +762,45 @@ const HostDashboard = () => {
                   }}
                 >
                   <FontAwesomeIcon icon={faFilter} /> Filter
+                </button>
+              </div>
+              
+              <div style={styles.statusFilterContainer}>
+                <button
+                  style={{
+                    ...styles.statusFilterBtn,
+                    ...(filters.status === 'all' ? styles.statusFilterBtnActive : {})
+                  }}
+                  onClick={() => setFilters(prev => ({ ...prev, status: 'all' }))}
+                >
+                  All
+                </button>
+                <button
+                  style={{
+                    ...styles.statusFilterBtn,
+                    ...(filters.status === 'verified' ? styles.statusFilterBtnActive : {})
+                  }}
+                  onClick={() => setFilters(prev => ({ ...prev, status: 'verified' }))}
+                >
+                  Approved
+                </button>
+                <button
+                  style={{
+                    ...styles.statusFilterBtn,
+                    ...(filters.status === 'pending' ? styles.statusFilterBtnActive : {})
+                  }}
+                  onClick={() => setFilters(prev => ({ ...prev, status: 'pending' }))}
+                >
+                  Pending
+                </button>
+                <button
+                  style={{
+                    ...styles.statusFilterBtn,
+                    ...(filters.status === 'rejected' ? styles.statusFilterBtnActive : {})
+                  }}
+                  onClick={() => setFilters(prev => ({ ...prev, status: 'rejected' }))}
+                >
+                  Rejected
                 </button>
               </div>
 
@@ -1427,7 +1492,7 @@ const HostDashboard = () => {
                 <select value={filters.status} onChange={e => setFilters(prev => ({ ...prev, status: e.target.value }))} style={{ padding: '0.9rem', borderRadius: '8px', border: '1px solid #ddd' }}>
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
-                  <option value="verified">Verified</option>
+                  <option value="verified">Approved</option>
                   <option value="rejected">Rejected</option>
                 </select>
                 <select value={filters.propertyType} onChange={e => setFilters(prev => ({ ...prev, propertyType: e.target.value }))} style={{ padding: '0.9rem', borderRadius: '8px', border: '1px solid #ddd' }}>

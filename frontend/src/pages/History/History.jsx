@@ -28,13 +28,11 @@ const History = () => {
       return DEFAULT_IMAGE;
     }
     const first = room.images[0];
-    if (typeof first !== 'string') return DEFAULT_IMAGE;
+    if (typeof first !== 'string' || first.length === 0) return DEFAULT_IMAGE;
     if (first.startsWith('http')) return first;
     if (first.startsWith('/')) return `http://localhost:3001${first}`;
-    if (/^[0-9a-fA-F]{24}$/.test(first)) {
-      return `http://localhost:3001/api/images/${first}`;
-    }
-    return DEFAULT_IMAGE;
+    // ObjectId string OR filename — both served by /api/images/:id
+    return `http://localhost:3001/api/images/${first}`;
   };
 
   const formatCurrency = (value) => {
@@ -69,7 +67,7 @@ const History = () => {
         try {
           const user = JSON.parse(userStr);
           if (user.accountType === 'traveller') {
-            const response = await fetch('http://localhost:3001/api/traveler/viewed-rooms', {
+            const response = await fetch('http://localhost:3001/api/users/traveler/viewed-rooms', {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -200,7 +198,7 @@ const History = () => {
         const user = JSON.parse(userStr);
         if (user.accountType === 'traveller') {
           // Optionally call an endpoint to clear server history
-          await fetch('http://localhost:3001/api/traveler/clear-history', {
+          await fetch('http://localhost:3001/api/users/traveler/clear-history', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,

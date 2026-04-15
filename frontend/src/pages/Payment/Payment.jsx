@@ -333,50 +333,7 @@ const Payment = () => {
       }
     }
     
-    // Validate payment details based on method
-    if (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') {
-      const cardNum = cardDetails.cardNumber.replace(/\s/g, '');
-      
-      // Card number validation
-      if (!cardNum) {
-        errors.cardNumber = 'Card number is required';
-      } else if (!/^\d{16}$/.test(cardNum)) {
-        errors.cardNumber = 'Card number must be 16 digits';
-      } else if (!validateCardNumber(cardNum)) {
-        errors.cardNumber = 'Invalid card number';
-      }
-      
-      // Card holder validation
-      if (!cardDetails.cardHolder.trim()) {
-        errors.cardHolder = 'Card holder name is required';
-      } else if (cardDetails.cardHolder.trim().length < 3) {
-        errors.cardHolder = 'Card holder name must be at least 3 characters';
-      }
-      
-      // Expiry date validation
-      if (!cardDetails.expiryMonth || !cardDetails.expiryYear) {
-        errors.expiryDate = 'Expiry date is required';
-      } else if (!validateExpiryDate(cardDetails.expiryMonth, cardDetails.expiryYear)) {
-        errors.expiryDate = 'Invalid or expired card';
-      }
-      
-      // CVV validation
-      const cardType = getCardType(cardNum);
-      if (!cardDetails.cvv) {
-        errors.cvv = 'CVV is required';
-      } else if (!validateCVV(cardDetails.cvv, cardType)) {
-        errors.cvv = cardType === 'amex' ? 'CVV must be 4 digits' : 'CVV must be 3 digits';
-      }
-    }
-    
-    // UPI validation
-    if (paymentMethod === 'upi') {
-      if (!upiId.trim()) {
-        errors.upiId = 'UPI ID is required';
-      } else if (!/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/.test(upiId)) {
-        errors.upiId = 'Please enter a valid UPI ID (e.g., username@bank)';
-      }
-    }
+    // Razorpay handles all payment method validation natively.
     
     // Special requests length validation
     if (specialRequests.length > 500) {
@@ -398,66 +355,123 @@ const Payment = () => {
     return 'other';
   };
 
-  const generateTransactionId = () => {
-    return `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
-  };
-
-  const processPayment = async () => {
-    if (!validateForm()) return false;
-
-    const paymentData = {
-      method: paymentMethod,
-      amount: displayCost,
-      currency: 'INR'
-    };
-
-    if (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') {
-      const cardNum = cardDetails.cardNumber.replace(/\s/g, '');
-      paymentData.cardLastFour = cardNum.slice(-4);
-      paymentData.cardType = getCardType(cardNum);
-      paymentData.transactionId = generateTransactionId();
-      
-      // Additional card validation before processing
-      const currentYear = new Date().getFullYear();
-      const currentMonth = new Date().getMonth() + 1;
-      const expiryMonth = parseInt(cardDetails.expiryMonth, 10);
-      const expiryYear = parseInt(cardDetails.expiryYear, 10);
-      
-      // Double-check expiry (in case user bypassed frontend validation)
-      if (expiryYear < currentYear || 
-          (expiryYear === currentYear && expiryMonth < currentMonth)) {
-        setError('Card has expired. Please use a valid card.');
-        return false;
-      }
-    } else if (paymentMethod === 'upi') {
-      paymentData.upiId = upiId;
-      paymentData.transactionId = generateTransactionId();
-    }
-
-    return paymentData;
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        resolve(true);
+      };
+      script.onerror = () => {
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
   };
 
   const handlePayment = async () => {
+    if (!validateForm()) return;
     setLoading(true);
     setError(null);
 
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    if (!token || !userStr) {
+      setError('Please log in to complete the booking');
+      setLoading(false);
+      return;
+    }
+
+    const user = JSON.parse(userStr);
+
+    const res = await loadRazorpay();
+    if (!res) {
+      setError('Razorpay SDK failed to load. Are you online?');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('token');
-      const userStr = localStorage.getItem('user');
+      // 1. Create order on the backend
+      const orderResponse = await fetch('http://localhost:3001/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: totalWithTax, currency: 'INR' })
+      });
       
-      if (!token || !userStr) {
-        setError('Please log in to complete the booking');
-        setLoading(false);
-        return;
+      const orderData = await orderResponse.json();
+      if (!orderData.success) {
+        throw new Error(orderData.message || 'Failed to initialize payment');
       }
 
-      const user = JSON.parse(userStr);
-      
-      const paymentResult = await processPayment();
-      if (!paymentResult) {
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: 'rzp_test_SO2HYyrhu02R9s', // Public key from env ideally, hardcoded here as requested
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: 'ShelterSeek',
+        description: `Booking for ${title}`,
+        order_id: orderData.order.id,
+        handler: async function (response) {
+          try {
+            // 3. Verify payment on backend
+            const verifyRes = await fetch('http://localhost:3001/api/payment/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+            const verifyData = await verifyRes.json();
+            
+            if (verifyData.success) {
+              // 4. Create actual booking
+              await submitBooking(response.razorpay_payment_id, token, user);
+            } else {
+              setError('Payment verification failed');
+              setLoading(false);
+            }
+          } catch (err) {
+            console.error('Verification error:', err);
+            setError('Payment verification failed');
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: user.name || guestDetails[0].guestName,
+          email: user.email || guestDetails[0].guestContact,
+          contact: guestDetails[0].guestContact,
+        },
+        theme: {
+          color: '#e91e63'
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', function (response) {
+        setError(response.error.description || 'Payment Failed');
         setLoading(false);
-        return;
-      }
+      });
+      paymentObject.open();
+
+    } catch (err) {
+      console.error('Payment Error:', err);
+      setError(err.message || 'Payment initialization failed');
+      setLoading(false);
+    }
+  };
+
+  const submitBooking = async (transactionId, token, user) => {
+    try {
+      const cardType = paymentMethod === 'credit_card' && cardDetails.cardNumber 
+          ? getCardType(cardDetails.cardNumber.replace(/\s/g, '')) 
+          : undefined;
+      const cardLastFour = paymentMethod === 'credit_card' && cardDetails.cardNumber
+          ? cardDetails.cardNumber.replace(/\s/g, '').slice(-4)
+          : undefined;
 
       const bookingResponse = await fetch('http://localhost:3001/api/bookings', {
         method: 'POST',
@@ -479,11 +493,11 @@ const Payment = () => {
           })),
           specialRequests: specialRequests,
           paymentDetails: {
-            paymentMethod: paymentMethod,
-            ...(paymentResult.cardLastFour && { cardLastFour: paymentResult.cardLastFour }),
-            ...(paymentResult.cardType && { cardType: paymentResult.cardType }),
-            transactionId: paymentResult.transactionId,
-            paymentGateway: 'simulated'
+            paymentMethod: 'razorpay', // Razorpay used for all methods
+            ...(cardLastFour && { cardLastFour }),
+            ...(cardType && { cardType }),
+            transactionId: transactionId,
+            paymentGateway: 'razorpay'
           }
         })
       });
@@ -497,21 +511,15 @@ const Payment = () => {
       }
 
       if (bookingResult.success) {
-        setCardDetails({
-          cardNumber: '',
-          cardHolder: '',
-          expiryMonth: '',
-          expiryYear: '',
-          cvv: ''
-        });
+        setCardDetails({ cardNumber: '', cardHolder: '', expiryMonth: '', expiryYear: '', cvv: '' });
         setUpiId('');
         setSpecialRequests('');
         
-        alert(`Booking confirmed!\nBooking ID: ${bookingResult.bookingId}\nTransaction ID: ${paymentResult.transactionId}`);
+        alert(`Booking confirmed!\nBooking ID: ${bookingResult.bookingId}\nTransaction ID: ${transactionId}`);
         
         const bookingInfo = {
           bookingId: bookingResult.bookingId,
-          transactionId: paymentResult.transactionId,
+          transactionId: transactionId,
           roomId: roomId,
           roomTitle: title,
           checkIn: checkIn,
@@ -530,8 +538,8 @@ const Payment = () => {
         setError(bookingResult.message || 'Failed to complete booking');
       }
     } catch (err) {
-      console.error('Payment error:', err);
-      setError('An error occurred. Please try again.');
+      console.error('Booking submission error:', err);
+      setError('An error occurred while saving the booking.');
     } finally {
       setLoading(false);
     }
@@ -797,150 +805,10 @@ const Payment = () => {
                 </div>
               </div>
 
-              {/* Payment Method Selection */}
-              <div className="payment-method-section">
-                <h3>Select Payment Method</h3>
-                <div className="payment-methods">
-                  {['credit_card', 'debit_card', 'upi', 'net_banking', 'wallet'].map(method => (
-                    <label key={method} className="payment-method-option">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value={method}
-                        checked={paymentMethod === method}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                      />
-                      <span className="method-label">
-                        {method === 'credit_card' && '💳 Credit Card'}
-                        {method === 'debit_card' && '💳 Debit Card'}
-                        {method === 'upi' && '📱 UPI'}
-                        {method === 'net_banking' && '🏦 Net Banking'}
-                        {method === 'wallet' && '💰 Wallet'}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
 
-              {/* Card Payment Form */}
-              {(paymentMethod === 'credit_card' || paymentMethod === 'debit_card') && (
-                <div className="card-payment-form">
-                  <h3>Card Details</h3>
-                  <div className="form-group">
-                    <label>Card Number *</label>
-                    <input
-                      type="text"
-                      value={cardDetails.cardNumber}
-                      onChange={handleCardNumberChange}
-                      placeholder="1234 5678 9012 3456"
-                      maxLength="19"
-                      className={formErrors.cardNumber ? 'error' : ''}
-                    />
-                    {formErrors.cardNumber && (
-                      <span className="error-message">{formErrors.cardNumber}</span>
-                    )}
-                  </div>
-                  <div className="form-group">
-                    <label>Card Holder Name *</label>
-                    <input
-                      type="text"
-                      value={cardDetails.cardHolder}
-                      onChange={(e) => {
-                        setCardDetails({...cardDetails, cardHolder: e.target.value});
-                        if (formErrors.cardHolder) {
-                          setFormErrors(prev => {
-                            const newErrors = {...prev};
-                            delete newErrors.cardHolder;
-                            return newErrors;
-                          });
-                        }
-                      }}
-                      placeholder="Name on card"
-                      className={formErrors.cardHolder ? 'error' : ''}
-                    />
-                    {formErrors.cardHolder && (
-                      <span className="error-message">{formErrors.cardHolder}</span>
-                    )}
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Expiry Month *</label>
-                      <input
-                        type="text"
-                        value={cardDetails.expiryMonth}
-                        onChange={(e) => handleExpiryChange(e, 'expiryMonth')}
-                        placeholder="MM"
-                        maxLength="2"
-                        className={formErrors.expiryDate ? 'error' : ''}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Expiry Year *</label>
-                      <input
-                        type="text"
-                        value={cardDetails.expiryYear}
-                        onChange={(e) => handleExpiryChange(e, 'expiryYear')}
-                        placeholder="YYYY"
-                        maxLength="4"
-                        className={formErrors.expiryDate ? 'error' : ''}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>CVV *</label>
-                      <input
-                        type="password"
-                        value={cardDetails.cvv}
-                        onChange={handleCVVChange}
-                        placeholder="123"
-                        maxLength="4"
-                        className={formErrors.cvv ? 'error' : ''}
-                      />
-                    </div>
-                  </div>
-                  {(formErrors.expiryDate || formErrors.cvv) && (
-                    <div className="form-row-errors">
-                      {formErrors.expiryDate && (
-                        <span className="error-message">{formErrors.expiryDate}</span>
-                      )}
-                      {formErrors.cvv && (
-                        <span className="error-message">{formErrors.cvv}</span>
-                      )}
-                    </div>
-                  )}
-                  <div className="expiry-note">
-                    <small>Format: MM (01-12) / YYYY (e.g., 12/2025)</small>
-                  </div>
-                </div>
-              )}
-
-              {/* UPI Payment Form */}
-              {paymentMethod === 'upi' && (
-                <div className="upi-payment-form">
-                  <h3>UPI Details</h3>
-                  <div className="form-group">
-                    <label>UPI ID *</label>
-                    <input
-                      type="text"
-                      value={upiId}
-                      onChange={(e) => {
-                        setUpiId(e.target.value);
-                        if (formErrors.upiId) {
-                          setFormErrors(prev => {
-                            const newErrors = {...prev};
-                            delete newErrors.upiId;
-                            return newErrors;
-                          });
-                        }
-                      }}
-                      placeholder="username@bank"
-                      className={formErrors.upiId ? 'error' : ''}
-                    />
-                    {formErrors.upiId && (
-                      <span className="error-message">{formErrors.upiId}</span>
-                    )}
-                  </div>
-                </div>
-              )}
+              <p className="payment-note" style={{ marginTop: '20px', color: '#666', fontStyle: 'italic' }}>
+                Note: You will be redirected to Razorpay's secure checkout overlay to enter your payment details.
+              </p>
 
               {error && (
                 <div className="payment-error-message">

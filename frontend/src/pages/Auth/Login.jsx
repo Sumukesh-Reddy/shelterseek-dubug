@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import './Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { setAuthenticatedSession } = useAuth();
   const [step, setStep] = useState(1); // 1: email/password, 2: OTP verification
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -96,8 +98,7 @@ const Login = () => {
         throw new Error(loginData.message || 'Login failed');
       }
       
-      localStorage.setItem('token', loginData.token);
-      localStorage.setItem('user', JSON.stringify(loginData.user));
+      setAuthenticatedSession(loginData.token, loginData.user);
       navigate('/');
     } catch (err) {
       setError(err.message);

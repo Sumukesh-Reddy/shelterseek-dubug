@@ -5,6 +5,29 @@ const path = require('path');
 const fs = require('fs');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Images
+ *   description: Image serving API
+ */
+
+/**
+ * @swagger
+ * /api/images/{id}:
+ *   get:
+ *     summary: Get image by ID or filename
+ *     tags: [Images]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Image stream
+ */
 // Get image by ID or filename
 router.get('/:id', async (req, res) => {
   try {

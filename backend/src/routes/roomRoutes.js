@@ -1,3 +1,4 @@
+const { cacheMiddleware } = require('../middleware/cacheMiddleware');
 // routes/roomRoutes.js
 const express = require('express');
 const roomController = require('../controllers/roomController');
@@ -8,13 +9,13 @@ const upload = require('../middleware/uploadMiddleware');
 const router = express.Router();
 
 // ========== PUBLIC ROUTES (No Authentication Required) ==========
-router.get('/', roomController.getAllRooms);
-router.get('/count', roomController.getRoomCounts);
+router.get('/', cacheMiddleware(300), roomController.getAllRooms);
+router.get('/count', cacheMiddleware(3600), roomController.getRoomCounts);
 router.get('/host/:email', roomController.getRoomsByHostEmail);
 router.get('/images/:id', hostController.getImage);
 
 // ✅ IMPORTANT: Listings routes - These MUST be defined here
-router.get('/listings', hostController.getListings);           // GET all listings
+router.get('/listings', cacheMiddleware(300), hostController.getListings);           // GET all listings
 router.get('/listings/:id', hostController.getListingById);    // GET single listing
 
 // ========== PROTECTED ROUTES (Host Only) ==========

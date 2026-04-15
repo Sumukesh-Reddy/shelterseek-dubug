@@ -193,7 +193,10 @@ const ImageGallery = ({ images }) => {
   const processImageUrl = (img) => {
     if (img.startsWith('http')) return img;
     if (img.startsWith('/')) return `http://localhost:3001${img}`;
-    if (/^[0-9a-fA-F]{24}$/.test(img)) return `http://localhost:3001/api/images/${img}`;
+    // ObjectId (24-hex) OR filename (images-xxx.jpg) — both served via /api/images/:id
+    if (/^[0-9a-fA-F]{24}$/.test(img) || img.includes('.') || img.startsWith('images-')) {
+      return `http://localhost:3001/api/images/${img}`;
+    }
     return '/images/logo.png';
   };
   

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { Traveler, Host } = require('../models/User');
+const { Traveler, Host, Manager } = require('../models/User');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const { sendOTPEmail } = require('../services/emailService');
@@ -149,7 +149,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     return next(new AppError('Email required', 400));
   }
 
-  const user = await Traveler.findOne({ email }) || await Host.findOne({ email });
+  const user = await Traveler.findOne({ email }) || await Host.findOne({ email }) || await Manager.findOne({ email });
   if (!user) {
     return next(new AppError('User not found', 404));
   }
@@ -188,6 +188,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     resetToken: token, 
     resetTokenExpires: { $gt: Date.now() } 
   }) || await Host.findOne({ 
+    email, 
+    resetToken: token, 
+    resetTokenExpires: { $gt: Date.now() } 
+  }) || await Manager.findOne({ 
     email, 
     resetToken: token, 
     resetTokenExpires: { $gt: Date.now() } 

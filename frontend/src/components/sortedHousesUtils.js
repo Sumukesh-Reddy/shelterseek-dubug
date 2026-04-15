@@ -1,22 +1,19 @@
+const API_BASE = 'http://localhost:3001';
+const PLACEHOLDER = '/images/default-house.jpg';
+
 export function processImagePaths(images) {
-  const placeholder = ".../public/images/photo1.png"; // Adjust path as needed
-  
-  if (!Array.isArray(images)) {
-    return [placeholder];
+  if (!Array.isArray(images) || images.length === 0) {
+    return [PLACEHOLDER];
   }
-  
+
   return images.map(img => {
     if (typeof img === 'string') {
-      // Already processed URL
-      if (img.startsWith('http') || img.startsWith('/')) {
-        return img;
-      }
-      // ObjectId format
-      if (/^[0-9a-fA-F]{24}$/.test(img)) {
-        return `/api/images/${img}`;
-      }
+      if (img.startsWith('http')) return img;
+      if (img.startsWith('/')) return `${API_BASE}${img}`;
+      // ObjectId OR filename — both served by /api/images/:id
+      if (img.length > 0) return `${API_BASE}/api/images/${img}`;
     }
-    return placeholder;
+    return PLACEHOLDER;
   });
 }
 

@@ -59,10 +59,11 @@ const RoomLayout = () => {
     const processImagePaths = (images) => {
       if (!Array.isArray(images)) return ['/images/photo1.jpg'];
       return images.map(img => {
+        if (typeof img !== 'string' || img.length === 0) return '/images/photo1.jpg';
         if (img.startsWith('http')) return img;
         if (img.startsWith('/')) return `http://localhost:3001${img}`;
-        if (/^[0-9a-fA-F]{24}$/.test(img)) return `http://localhost:3001/api/images/${img}`;
-        return '/images/photo1.jpg';
+        // ObjectId OR filename — both served by /api/images/:id
+        return `http://localhost:3001/api/images/${img}`;
       });
     };
 
@@ -148,7 +149,7 @@ const RoomLayout = () => {
               try {
                 const user = JSON.parse(userStr);
                 if (user.accountType === 'traveller') {
-                  await fetch('http://localhost:3001/api/traveler/viewed-rooms', {
+                  await fetch('http://localhost:3001/api/users/traveler/viewed-rooms', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -356,7 +357,7 @@ const RoomLayout = () => {
       try {
         const user = JSON.parse(userStr);
         if (user.accountType === 'traveller') {
-          const response = await fetch('http://localhost:3001/api/traveler/liked-rooms', {
+          const response = await fetch('http://localhost:3001/api/users/traveler/liked-rooms', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

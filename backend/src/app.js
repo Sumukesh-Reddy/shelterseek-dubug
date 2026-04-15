@@ -25,7 +25,10 @@ const aiChatRoutes = require('./routes/aiChatRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 const managerRoutes = require('./routes/managerRoutes');
 const financeRoutes = require('./routes/financeRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
+// Swagger setup
+const setupSwagger = require('./config/swagger');
 
 const app = express();
 const server = http.createServer(app);
@@ -124,6 +127,9 @@ app.use('/uploads', express.static(uploadsDir));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Initialize Swagger
+setupSwagger(app);
+
 // ========== ROUTES ==========
 app.use('/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -136,6 +142,7 @@ app.use('/api/images', imageRoutes);
 app.use('/api/managers', managerRoutes);
 app.use('/auth/manager', managerRoutes);
 app.use("/api/finance", financeRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

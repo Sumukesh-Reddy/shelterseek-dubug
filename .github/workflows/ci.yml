@@ -1,0 +1,52 @@
+name: ShelterSeek CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        cache-dependency-path: './backend/package-lock.json'
+        
+    - run: npm install
+    - run: npm test
+      env:
+        CI: true
+        NODE_ENV: test
+        JWT_SECRET: test_secret_key_123
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+        
+    - run: npm install
+    - run: npm run build
+      env:
+        CI: false

@@ -1,8 +1,11 @@
+const mongoose = require('mongoose');
+const path = require('path');
+const fs = require('fs');
 const Room = require('../models/Room');
 const { Traveler, Host } = require('../models/User');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const { uploadMultipleToGridFS, deleteFromGridFS, getFileStream } = require('../services/gridfsService');
+const { uploadMultipleToGridFS, deleteFromGridFS, getFileStream, getFileMetadata } = require('../services/gridfsService');
 const qrcode = require('qrcode');
 
 // Create listing
@@ -223,44 +226,6 @@ exports.getListingById = catchAsync(async (req, res, next) => {
   });
 });
 
-// Get image
-exports.getImage = catchAsync(async (req, res, next) => {
-    try {
-      const mongoose = require('mongoose');
-      
-      if (!global.gfsBucket) {
-        return next(new AppError('GridFS not initialized', 500));
-      }
-  
-      const fileId = new mongoose.Types.ObjectId(req.params.id);
-      
-      // Check if file exists
-      const files = await global.gfsBucket.find({ _id: fileId }).toArray();
-      if (!files || files.length === 0) {
-        return next(new AppError('Image not found', 404));
-      }
-  
-      const file = files[0];
-      
-      // Set content type
-      res.set('Content-Type', file.contentType);
-      
-      // Create download stream
-      const downloadStream = global.gfsBucket.openDownloadStream(fileId);
-      
-      // Handle errors
-      downloadStream.on('error', (error) => {
-        return next(new AppError('Error streaming image', 500));
-      });
-  
-      // Pipe to response
-      downloadStream.pipe(res);
-    } catch (error) {
-      console.error('Error fetching image:', error);
-      return next(new AppError('Failed to fetch image', 500));
-    }
-  });
-
 exports.getListings = catchAsync(async (req, res) => {
     try {
       const Room = require('../models/Room');
@@ -300,9 +265,13 @@ exports.deleteListing = catchAsync(async (req, res, next) => {
     return next(new AppError('Access denied', 403));
   }
 
-  // Delete images from GridFS
+  // Delete images from GridFS (non-blocking — don't let image cleanup failures prevent deletion)
   for (const imgId of listing.images) {
-    await deleteFromGridFS(imgId);
+    try {
+      await deleteFromGridFS(imgId);
+    } catch (err) {
+      console.warn(`⚠️ Could not delete image ${imgId}:`, err.message);
+    }
   }
 
   await Room.findByIdAndDelete(req.params.id);
@@ -336,4 +305,52 @@ exports.generateQRCode = catchAsync(async (req, res, next) => {
     listingUrl,
     listingTitle: listing.title
   });
+});
+
+// Serve image from GridFS or local storage
+exports.getImage = catchAsync(async (req, res, next) => {
+  const fileId = req.params.id;
+
+  if (!fileId) {
+    return next(new AppError('File ID is required', 400));
+  }
+
+  // Handle local files (fallback) - check if it's a UUID or filename instead of ObjectId
+  const isObjectId = mongoose.Types.ObjectId.isValid(fileId);
+
+  if (!isObjectId) {
+    const localPath = path.join(__dirname, '../../public/uploads', fileId);
+    if (fs.existsSync(localPath)) {
+      return res.sendFile(localPath);
+    }
+    return next(new AppError('Invalid image ID or file not found', 400));
+  }
+
+  try {
+    const metadata = await getFileMetadata(fileId);
+    
+    if (!metadata) {
+      // Fallback for local files if ObjectID is valid but not in GridFS
+      const localPath = path.join(__dirname, '../../public/uploads', fileId);
+      if (fs.existsSync(localPath)) {
+        return res.sendFile(localPath);
+      }
+      return next(new AppError('Image not found', 404));
+    }
+
+    res.set('Content-Type', metadata.contentType || 'image/jpeg');
+    const downloadStream = getFileStream(fileId);
+    
+    downloadStream.on('error', (err) => {
+      console.error('❌ Error streaming image:', err);
+      if (!res.headersSent) {
+        res.status(404).json({ success: false, message: 'Error streaming image' });
+      }
+    });
+
+    downloadStream.pipe(res);
+  } catch (error) {
+    console.error('❌ Error in getImage:', error);
+    return next(new AppError('Failed to fetch image', 500));
+  }
 });

@@ -316,6 +316,7 @@ exports.getBookingStats = catchAsync(async (req, res) => {
 
   const startOfWeek = new Date(now);
   const day = now.getDay();
+  // Get Monday of current week
   const diffToMonday = day === 0 ? -6 : 1 - day;
   startOfWeek.setDate(now.getDate() + diffToMonday);
   startOfWeek.setHours(0, 0, 0, 0);
@@ -324,18 +325,17 @@ exports.getBookingStats = catchAsync(async (req, res) => {
   endOfWeek.setDate(startOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
 
-  let total = 0;
+  let total = bookings.length; // Use array length as source of truth for total
   let thisMonth = 0;
   let thisWeek = 0;
 
   bookings.forEach(b => {
-    const bookingDate = b.bookedAt || b.createdAt || b.checkIn;
+    // Robust date check: prefer bookedAt, then createdAt, then checkIn
+    const bookingDate = b.bookedAt || b.createdAt || b.checkIn || b.paymentDetails?.paymentDate;
     if (!bookingDate) return;
     
     const bookingDateObj = new Date(bookingDate);
     if (isNaN(bookingDateObj)) return;
-
-    total++;
 
     if (bookingDateObj >= startOfMonth && bookingDateObj <= endOfMonth) {
       thisMonth++;
@@ -351,6 +351,7 @@ exports.getBookingStats = catchAsync(async (req, res) => {
     total, 
     thisMonth, 
     thisWeek,
+    count: bookings.length,
     dateRange: {
       weekStart: startOfWeek.toISOString(),
       weekEnd: endOfWeek.toISOString(),

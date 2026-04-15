@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from "react-redux";
 import { setUser } from "../../store/slices/userSlice";
+import { useAuth } from '../../contexts/AuthContext';
 import './Login.css';
 
 const TravelerLogin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch(); // Added
+  const { setAuthenticatedSession } = useAuth();
   const [step, setStep] = useState(1); // 1: email/password, 2: OTP verification
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -104,18 +106,8 @@ const TravelerLogin = () => {
         throw new Error('This login is for travelers only. Please use the host login.');
       }
       
-      localStorage.setItem('token', loginData.token);
-      localStorage.setItem('user', JSON.stringify(loginData.user));
-      
+      setAuthenticatedSession(loginData.token, loginData.user);
       dispatch(setUser(loginData.user));
-      
-      // Also store in sessionStorage for consistency with profile page
-      sessionStorage.setItem('currentUser', JSON.stringify({
-        ...loginData.user,
-        email: loginData.user.email,
-        accountType: loginData.user.accountType,
-        name: loginData.user.name
-      }));
       
       // Store liked rooms and history from MongoDB
       if (loginData.user.likedRooms) {

@@ -63,17 +63,10 @@ const HostProfile = () => {
 
   const getProfilePhotoUrl = (profilePhoto) => {
     if (!profilePhoto) return '/images/photo1.jpg';
-    
-    if (profilePhoto.startsWith('/api/images/') || 
-        profilePhoto.startsWith('/public/') || 
-        profilePhoto.startsWith('http')) {
-      return profilePhoto;
-    }
-    
-    if (profilePhoto.length === 24) {
-      return `${API_BASE_URL}/api/images/${profilePhoto}`;
-    }
-    
+    if (profilePhoto.startsWith('http')) return profilePhoto;
+    if (profilePhoto.startsWith('/')) return `${API_BASE_URL}${profilePhoto}`;
+    // ObjectId OR filename — both served by /api/images/:id
+    if (profilePhoto.length > 0) return `${API_BASE_URL}/api/images/${profilePhoto}`;
     return '/images/photo1.jpg';
   };
 

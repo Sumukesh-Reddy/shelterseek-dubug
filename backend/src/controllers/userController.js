@@ -108,7 +108,7 @@ exports.getHosts = catchAsync(async (req, res) => {
 });
 
 // Get user by email
-exports.getUserByEmail = catchAsync(async (req, res) => {
+exports.getUserByEmail = catchAsync(async (req, res, next) => {
   const { email } = req.params;
   
   const user = await Traveler.findOne({ email }) || await Host.findOne({ email });

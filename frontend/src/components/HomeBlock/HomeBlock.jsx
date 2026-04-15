@@ -13,12 +13,16 @@ const HomeBlock = ({ room }) => {
     }
     return images.map(img => {
       if (typeof img === 'string') {
-        // If it's already a URL path
-        if (img.startsWith('http') || img.startsWith('/')) {
-          return img.startsWith('http') ? img : `http://localhost:3001${img}`;
-        }
-        // If it's an image ID (24 character hex string)
+        // Already a full URL
+        if (img.startsWith('http')) return img;
+        // Already an absolute path — prepend backend host
+        if (img.startsWith('/')) return `http://localhost:3001${img}`;
+        // 24-char hex ObjectId → GridFS route
         if (/^[0-9a-fA-F]{24}$/.test(img)) {
+          return `http://localhost:3001/api/images/${img}`;
+        }
+        // Filename stored from disk fallback (e.g. images-1234.jpg)
+        if (img.includes('.') || img.startsWith('images-')) {
           return `http://localhost:3001/api/images/${img}`;
         }
       }

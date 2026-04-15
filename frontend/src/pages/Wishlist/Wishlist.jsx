@@ -24,7 +24,7 @@ const Wishlist = () => {
           try {
             const user = JSON.parse(userStr);
             if (user.accountType === 'traveller') {
-              const response = await fetch('http://localhost:3001/api/traveler/liked-rooms', {
+              const response = await fetch('http://localhost:3001/api/users/traveler/liked-rooms', {
                 headers: {
                   'Authorization': `Bearer ${token}`
                 }

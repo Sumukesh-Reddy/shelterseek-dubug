@@ -193,7 +193,14 @@ export default function HostRequests() {
                 const expired = isExpired(request.createdAt);
                 const booked = isBooked(request.booking);
                 const firstImageId = Array.isArray(request.images) && request.images.length > 0 ? request.images[0] : null;
-                const imageSrc = firstImageId ? `${API_BASE}/api/images/${firstImageId}` : '/images/placeholder.png';
+                const getImageUrl = (img) => {
+                  if (!img) return '/images/placeholder.png';
+                  if (img.startsWith('http')) return img;
+                  if (img.startsWith('/')) return `${API_BASE}${img}`;
+                  // ObjectId or filename — both served via /api/images/:id
+                  return `${API_BASE}/api/images/${img}`;
+                };
+                const imageSrc = firstImageId ? getImageUrl(firstImageId) : '/images/placeholder.png';
                 const currentStatus = (request.status || 'pending').toLowerCase();
                 return (
                   <div
@@ -257,14 +264,18 @@ export default function HostRequests() {
             <div id="modal-media" className="modal-media">
               <div className="image-carousel">
                 {Array.isArray(selected.images) && selected.images.length > 0 ? (
-                  selected.images.map((imgId, i) => (
-                    <img
-                      key={i}
-                      src={`${API_BASE}/api/images/${imgId}`}
-                      alt={`Listing view ${i + 1} - ${sanitizeString(selected.title) || 'Host Request'}`}
-                      loading="lazy"
-                    />
-                  ))
+                  selected.images.map((imgId, i) => {
+                    const url = imgId.startsWith('http') ? imgId
+                      : `${API_BASE}/api/images/${imgId}`;
+                    return (
+                      <img
+                        key={i}
+                        src={url}
+                        alt={`Listing view ${i + 1} - ${sanitizeString(selected.title) || 'Host Request'}`}
+                        loading="lazy"
+                      />
+                    );
+                  })
                 ) : (
                   <img src="/images/placeholder.png" alt="Listing placeholder" loading="lazy" />
                 )}

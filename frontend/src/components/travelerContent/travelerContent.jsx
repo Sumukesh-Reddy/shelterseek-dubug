@@ -14,7 +14,7 @@ const TravelContent = () => {
   };
 
   const renderModal = () => {
-    switch(activeModal) {
+    switch (activeModal) {
       case 'chennai':
         return (
           <div className="modal-content">
@@ -121,7 +121,7 @@ const TravelContent = () => {
               <img src="/images/photo1.jpg" alt="Destinations 2025" />
             </div>
             <div className="modal-body">
-              <h2>Best Destinations for 2025</h2>
+              <h2>Best Destinations for 2026</h2>
               <p>1. Paris, France - The City of Light continues to enchant visitors.</p>
               <p>2. Tokyo, Japan - A blend of tradition and modernity.</p>
               <p>3. New York City, USA - The city that never sleeps.</p>
@@ -188,7 +188,7 @@ const TravelContent = () => {
         </div>
       </div>
 
-    <Testimonials/>
+      <Testimonials />
       {/* Blog Section */}
       <div className="blog">
         <h2>Latest Blog Posts</h2>
@@ -201,8 +201,8 @@ const TravelContent = () => {
           </div>
           <div className="blog-card">
             <img src="/images/photo1.jpg" alt="Blog 2" />
-            <h3>Best Destinations for 2025</h3>
-            <p>Find out the top destinations to visit in 2025.</p>
+            <h3>Best Destinations for 2026</h3>
+            <p>Find out the top destinations to visit in 2026.</p>
             <button className="btn" onClick={() => openModal('destinations-2025')}>Read More</button>
           </div>
           <div className="blog-card">

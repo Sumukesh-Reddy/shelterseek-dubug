@@ -36,108 +36,119 @@ function AdminDashboard() {
 
   // fetch data
   useEffect(() => {
-   // Fetch booking summary (list)
-fetch('http://localhost:3001/api/bookings/summarys')
-.then(res => res.json())
-.then(response => {
-  if (response.success && Array.isArray(response.bookings)) {
-    setBookings(response.bookings);
-  } else {
-    setBookings([]);
-  }
-})
-.catch(err => {
-  console.error('Error fetching booking summary:', err);
-  setBookings([]);
-});
-
-// Fetch room counts
-fetch('http://localhost:3001/api/rooms/count')
-.then(res => res.json())
-.then(data => {
-  if (data.success) {
-    setRoomCounts(data.counts);
-    
-    let shared = 0;
-    let full = 0;
-    
-    if (Array.isArray(data.popularTypes)) {
-      data.popularTypes.forEach((t) => {
-        if (/shared/i.test(t._id)) {
-          shared = t.count;
-        } else if (/full/i.test(t._id)) {
-          full = t.count;
+    // Fetch booking summary (list)
+    fetch('http://localhost:3001/api/bookings/summarys')
+      .then(res => res.json())
+      .then(response => {
+        if (response.success && Array.isArray(response.bookings)) {
+          // SORT REVERSE: Newest first
+          const sorted = [...response.bookings].sort((a, b) => {
+             // Try to sort by _id (timestamp embedded) or a date field if it exists
+             return b._id.toString().localeCompare(a._id.toString());
+          });
+          setBookings(sorted);
+        } else {
+          setBookings([]);
         }
+      })
+      .catch(err => {
+        console.error('Error fetching booking summary:', err);
+        setBookings([]);
       });
-    }
-    
-    setRoomTypeCounts({ shared, full });
-  }
-})
-.catch(err => console.error('Error fetching room counts:', err))
-.finally(() => setLoadingRooms(false));
 
-// Fetch new customers - UPDATED URL
-fetch('http://localhost:3001/api/admin/new-customers', {
-headers: {
-  'Authorization': `Bearer ${localStorage.getItem('token')}`
-}
-})
-.then(res => res.json())
-.then(result => {
-  if (result.success && Array.isArray(result.data)) {
-    setNewCustomers(result.data);
-  } else {
-    setNewCustomers([]);
-  }
-})
-.catch((err) => {
-  console.error('Error fetching new customers:', err);
-  setNewCustomers([]);
-});
+    // Fetch room counts
+    fetch('http://localhost:3001/api/rooms/count')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setRoomCounts(data.counts);
+          
+          let shared = 0;
+          let full = 0;
+          
+          if (Array.isArray(data.popularTypes)) {
+            data.popularTypes.forEach((t) => {
+              if (/shared/i.test(t._id)) {
+                shared = t.count;
+              } else if (/full/i.test(t._id)) {
+                full = t.count;
+              }
+            });
+          }
+          
+          setRoomTypeCounts({ shared, full });
+        }
+      })
+      .catch(err => console.error('Error fetching room counts:', err))
+      .finally(() => setLoadingRooms(false));
 
-// Fetch recent activities - UPDATED URL
-fetch('http://localhost:3001/api/admin/recent-activities', {
-headers: {
-  'Authorization': `Bearer ${localStorage.getItem('token')}`
-}
-})
-.then(res => res.json())
-.then(result => {
-  if (Array.isArray(result?.data)) setRecentActivities(result.data);
-  else if (Array.isArray(result)) setRecentActivities(result);
-  else setRecentActivities([]);
-})
-.catch(() => setRecentActivities([]));
+    // Fetch new customers
+    fetch('http://localhost:3001/api/admin/new-customers', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success && Array.isArray(result.data)) {
+          setNewCustomers(result.data);
+        } else {
+          setNewCustomers([]);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching new customers:', err);
+        setNewCustomers([]);
+      });
 
-// Fetch revenue - UPDATED URL
-fetch('http://localhost:3001/api/admin/revenue', {
-headers: {
-  'Authorization': `Bearer ${localStorage.getItem('token')}`
-}
-})
-.then(res => res.json())
-.then(data => {
-  if (data) {
-    setTotalRevenue(data.totalRevenue ?? 0);
-    setThisMonthRevenue(data.thisMonthRevenue ?? 0);
-    setThisWeekRevenue(data.thisWeekRevenue ?? 0);
-  }
-})
-.catch(() => {});
+    // Fetch recent activities
+    fetch('http://localhost:3001/api/admin/recent-activities', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+      .then(res => res.json())
+      .then(result => {
+        if (Array.isArray(result?.data)) setRecentActivities(result.data);
+        else if (Array.isArray(result)) setRecentActivities(result);
+        else setRecentActivities([]);
+      })
+      .catch(() => setRecentActivities([]));
 
-// Fetch booking counts (these are public, no auth needed)
-fetch('http://localhost:3001/api/bookings/summary')
-.then(res => res.json())
-.then(data => {
-  if (data) {
-    setTotalBookings(data.total ?? 0);
-    setThisMonthBookings(data.thisMonth ?? 0);
-    setThisWeekBookings(data.thisWeek ?? 0);
-  }
-})
-.catch(() => {});
-  }, []);
+    // Fetch revenue
+    fetch('http://localhost:3001/api/admin/revenue', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success) {
+          setTotalRevenue(data.totalRevenue ?? 0);
+          setThisMonthRevenue(data.thisMonthRevenue ?? 0);
+          setThisWeekRevenue(data.thisWeekRevenue ?? 0);
+        }
+      })
+      .catch(() => {});
+
+    // FIX: Fetch booking counts from /stats endpoint with cache-busting
+    fetch('http://localhost:3001/api/bookings/stats', {
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success) {
+          // If stats returns 0 but we already have bookings in the table, use that length
+          setTotalBookings(prev => {
+            if (data.total === 0 && bookings.length > 0) return bookings.length;
+            return data.total ?? 0;
+          });
+          setThisMonthBookings(data.thisMonth ?? 0);
+          setThisWeekBookings(data.thisWeek ?? 0);
+        }
+      })
+      .catch(() => {});
+  }, [bookings.length]); // Add bookings.length as dependency to refresh counts if list changes
 
   // Function to get initials from name
   const getInitials = (name) => {

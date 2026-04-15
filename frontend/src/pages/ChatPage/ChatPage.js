@@ -91,7 +91,7 @@ const ChatPage = () => {
           return;
         }
 
-        const resp = await axios.get(`${API_URL}/api/users/search`, {
+        const resp = await axios.get(`${API_URL}/api/chat/users/search`, {
           params: { query: email },
           headers: { Authorization: `Bearer ${token}` }
         });

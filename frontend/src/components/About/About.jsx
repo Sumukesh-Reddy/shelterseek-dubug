@@ -15,7 +15,7 @@ const About = () => {
   useEffect(() => {
     const fetchUserCounts = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/user-counts');
+        const response = await fetch('http://localhost:3001/api/users/counts');
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -104,23 +104,47 @@ const About = () => {
           </div>
         </div>
         
-        <section className="stats-section">
-          <div className="stats-container">
-            <div className="stat-item">
-              <div className="stat-number">{travelerCount.toLocaleString()}+</div>
-              <div className="stat-label">Happy Travelers</div>
+        <section className="stats-section" style={{ 
+          background: 'linear-gradient(90deg, #d72d6e, #7c3aed)',
+          borderRadius: '20px',
+          margin: '40px 0',
+          padding: '40px 20px',
+          color: 'white',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+        }}>
+          <div className="stats-container" style={{ 
+            display: 'flex', 
+            justifyContent: 'space-around', 
+            flexWrap: 'wrap',
+            gap: '20px'
+          }}>
+            <div className="stat-item" style={{ textAlign: 'center', flex: '1', minWidth: '150px' }}>
+              <div className="stat-number" style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '5px' }}>
+                {travelerCount.toLocaleString()}+
+              </div>
+              <div className="stat-label" style={{ fontSize: '1.2rem', fontWeight: '600', opacity: '0.9' }}>
+                Happy Travelers
+              </div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">{hostCount.toLocaleString()}+</div>
-              <div className="stat-label">Verified Hosts</div>
+            <div className="stat-item" style={{ textAlign: 'center', flex: '1', minWidth: '150px' }}>
+              <div className="stat-number" style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '5px' }}>
+                {hostCount.toLocaleString()}+
+              </div>
+              <div className="stat-label" style={{ fontSize: '1.2rem', fontWeight: '600', opacity: '0.9' }}>
+                Verified Hosts
+              </div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">1+</div>
-              <div className="stat-label">Countries</div>
+            <div className="stat-item" style={{ textAlign: 'center', flex: '1', minWidth: '150px' }}>
+              <div className="stat-number" style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '5px' }}>1+</div>
+              <div className="stat-label" style={{ fontSize: '1.2rem', fontWeight: '600', opacity: '0.9' }}>
+                Countries
+              </div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">24/7</div>
-              <div className="stat-label">Support</div>
+            <div className="stat-item" style={{ textAlign: 'center', flex: '1', minWidth: '150px' }}>
+              <div className="stat-number" style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '5px' }}>24/7</div>
+              <div className="stat-label" style={{ fontSize: '1.2rem', fontWeight: '600', opacity: '0.9' }}>
+                Support
+              </div>
             </div>
           </div>
         </section>
