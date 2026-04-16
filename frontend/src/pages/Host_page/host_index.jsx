@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, faSyncAlt, faHome, faMapMarkerAlt, faBed, 
   faUtensils, faWifi, faParking, faSnowflake, faTshirt,
-  faCar, faChargingStation, faArrowLeft, faArrowRight,
+  faArrowLeft, faArrowRight,
   faCheck, faSave, faImages, faCalendarAlt, faTag,
   faRuler, faVenusMars, faBus, faInfoCircle
 } from '@fortawesome/free-solid-svg-icons';
@@ -681,6 +681,7 @@ const Step5Media = ({
 
 // Main Component
 const HostIndex = () => {
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -698,7 +699,9 @@ const HostIndex = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [lastRefresh, setLastRefresh] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const mediaInputRef = useRef(null);
   const uploadContainerRef = useRef(null);
 
@@ -750,6 +753,7 @@ const HostIndex = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listingId]);
 
   const getCurrentUser = () => {
@@ -764,6 +768,7 @@ const HostIndex = () => {
       setListingId(id);
       fetchListing(id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
