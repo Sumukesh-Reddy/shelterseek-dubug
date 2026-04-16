@@ -15,7 +15,7 @@ const UserRevenue = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/finance/users");
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/finance/users`);
       const data = await res.json();
       setUsers(data);
       setLoading(false);

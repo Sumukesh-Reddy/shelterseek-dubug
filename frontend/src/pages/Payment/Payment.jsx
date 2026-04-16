@@ -185,6 +185,7 @@ const Payment = () => {
     return true;
   };
 
+  // eslint-disable-next-line no-unused-vars
   const validateCVV = (cvv, cardType) => {
     if (!/^\d{3,4}$/.test(cvv)) return false;
     
@@ -242,6 +243,7 @@ const Payment = () => {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleCardNumberChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 16) value = value.substring(0, 16);
@@ -258,6 +260,7 @@ const Payment = () => {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleExpiryChange = (e, field) => {
     let value = e.target.value.replace(/\D/g, '');
     if (field === 'expiryMonth' && value.length > 2) value = value.substring(0, 2);
@@ -274,6 +277,7 @@ const Payment = () => {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleCVVChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 4) value = value.substring(0, 4);

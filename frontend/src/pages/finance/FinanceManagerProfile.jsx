@@ -84,7 +84,7 @@ const FinanceManagerProfile = () => {
     fetchManagerProfile();
   }, [authToken]);
 
-  const profile = manager || user || {};
+  const profile = useMemo(() => manager || user || {}, [manager, user]);
 
   const profileGroups = useMemo(
     () => [

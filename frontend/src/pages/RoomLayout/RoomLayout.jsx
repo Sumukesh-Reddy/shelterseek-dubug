@@ -263,6 +263,7 @@ const RoomLayout = () => {
     }).format(number);
   };
 
+  // eslint-disable-next-line no-unused-vars
   const generateStars = (rating) => {
     const numericRating = parseFloat(rating) || 0;
     const fullStars = Math.floor(numericRating);
@@ -282,6 +283,7 @@ const RoomLayout = () => {
     );
   };
 
+  // eslint-disable-next-line no-unused-vars
   const calculateAverageRating = (reviews) => {
     if (!reviews?.length) return 0;
     const sum = reviews.reduce((total, rev) => total + (rev.rating || 0), 0);
