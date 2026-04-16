@@ -704,7 +704,7 @@ const HostIndex = () => {
 
   const slides = ['/images/photo1.jpg','/images/photo2.jpg','/images/photo3.jpg','/images/photo4.jpg'];
   const [currentSlide, setCurrentSlide] = useState(0);
-  const API_BASE_URL = 'http://localhost:3001';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   // Steps configuration
   const steps = [

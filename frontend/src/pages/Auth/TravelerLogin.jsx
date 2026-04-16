@@ -50,7 +50,7 @@ const TravelerLogin = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3001/auth/send-otp', {
+      const res = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -79,7 +79,7 @@ const TravelerLogin = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3001/auth/verify-otp', {
+      const res = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: otpString })
@@ -91,7 +91,7 @@ const TravelerLogin = () => {
       setSuccess('OTP verified! Logging you in...');
       
       // Now proceed with login
-      const loginRes = await fetch('http://localhost:3001/auth/login', {
+      const loginRes = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

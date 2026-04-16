@@ -36,7 +36,7 @@ const MapComponent = () => {
     // Fetch rooms and add markers
     const fetchRooms = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/rooms');
+        const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
         const result = await response.json();
         
         if (result.status === "success" && Array.isArray(result.data)) {

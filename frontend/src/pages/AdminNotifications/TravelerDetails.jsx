@@ -22,7 +22,7 @@ function TravelerDetails() {
       try {
         const token = localStorage.getItem('token');
         
-        const response = await fetch(`http://localhost:3001/api/bookings/traveler/${encodeURIComponent(email)}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/bookings/traveler/${encodeURIComponent(email)}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

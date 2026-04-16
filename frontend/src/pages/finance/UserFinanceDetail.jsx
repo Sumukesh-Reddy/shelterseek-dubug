@@ -9,14 +9,10 @@ const UserFinanceDetail = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchUserFinance();
-  }, []);
-
-  const fetchUserFinance = async () => {
+  const fetchUserFinance = React.useCallback(async () => {
     try {
       const res = await fetch(
-        `http://localhost:3001/api/finance/user/${id}`
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/finance/user/${id}`
       );
       const result = await res.json();
       setData(result);
@@ -25,7 +21,11 @@ const UserFinanceDetail = () => {
       console.error("Error fetching user details:", error);
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchUserFinance();
+  }, [fetchUserFinance]);
 
   if (loading) return <h2>Loading...</h2>;
 

@@ -22,7 +22,7 @@ function AdminNotifications() {
     
     const token = localStorage.getItem('token'); // Get token from storage
     
-    fetch(`http://localhost:3001/api/users?accountType=${activeTab}`, {
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users?accountType=${activeTab}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -69,7 +69,7 @@ function AdminNotifications() {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`http://localhost:3001/api/admin/users/${userId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

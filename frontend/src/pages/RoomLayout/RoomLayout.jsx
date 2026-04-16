@@ -61,9 +61,9 @@ const RoomLayout = () => {
       return images.map(img => {
         if (typeof img !== 'string' || img.length === 0) return '/images/photo1.jpg';
         if (img.startsWith('http')) return img;
-        if (img.startsWith('/')) return `http://localhost:3001${img}`;
+        if (img.startsWith('/')) return `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}${img}`;
         // ObjectId OR filename — both served by /api/images/:id
-        return `http://localhost:3001/api/images/${img}`;
+        return `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/images/${img}`;
       });
     };
 
@@ -130,7 +130,7 @@ const RoomLayout = () => {
     const fetchRooms = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:3001/api/rooms');
+        const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }
@@ -149,7 +149,7 @@ const RoomLayout = () => {
               try {
                 const user = JSON.parse(userStr);
                 if (user.accountType === 'traveller') {
-                  await fetch('http://localhost:3001/api/users/traveler/viewed-rooms', {
+                  await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/viewed-rooms', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -357,7 +357,7 @@ const RoomLayout = () => {
       try {
         const user = JSON.parse(userStr);
         if (user.accountType === 'traveller') {
-          const response = await fetch('http://localhost:3001/api/users/traveler/liked-rooms', {
+          const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/liked-rooms', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -916,7 +916,7 @@ const RoomLayout = () => {
                   room.host?.image && room.host.image.startsWith('http')
                     ? room.host.image
                     : room.host?.image && /^[0-9a-fA-F]{24}$/.test(room.host.image)
-                    ? `http://localhost:3001/api/images/${room.host.image}`
+                    ? `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/images/${room.host.image}`
                     : '/images/logo.png'
                 }
                 alt={`${room.host?.name || 'Host'} profile`}

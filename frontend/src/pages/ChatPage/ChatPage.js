@@ -26,7 +26,7 @@ const ChatPage = () => {
   const pollingIntervalRef = useRef(null);
   const lastMessageFetchRef = useRef({});
 
-  const API_URL = 'http://localhost:3001';
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   const api = axios.create({
     baseURL: `${API_URL}/api`,

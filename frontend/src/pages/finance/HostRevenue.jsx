@@ -18,11 +18,9 @@ import {
   Filter,
   Download,
   TrendingUp,
-  TrendingDown,
   Award,
   Home,
   DollarSign,
-  Users,
   RefreshCw,
   Eye,
   EyeOff,
@@ -34,8 +32,6 @@ import {
   BarChart3,
   PieChart as PieChartIcon,
   Mail,
-  Phone,
-  Calendar,
   ArrowUpDown
 } from "lucide-react";
 import "./HostRevenue.css";
@@ -61,18 +57,10 @@ const HostRevenue = () => {
     Bronze: '#B45309'
   };
 
-  useEffect(() => {
-    fetchHosts();
-  }, [dateRange]);
-
-  useEffect(() => {
-    filterAndSortHosts();
-  }, [hosts, search, filterTier, sortConfig]);
-
-  const fetchHosts = async () => {
+  const fetchHosts = React.useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/finance/hosts?range=${dateRange}`);
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/finance/hosts?range=${dateRange}`);
       const data = await res.json();
       setHosts(data);
     } catch (error) {
@@ -80,9 +68,9 @@ const HostRevenue = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange]);
 
-  const filterAndSortHosts = () => {
+  const filterAndSortHosts = React.useCallback(() => {
     let filtered = [...hosts];
 
     // Apply search filter
@@ -114,7 +102,15 @@ const HostRevenue = () => {
     });
 
     setFilteredHosts(filtered);
-  };
+  }, [hosts, search, filterTier, sortConfig]);
+
+  useEffect(() => {
+    fetchHosts();
+  }, [fetchHosts]);
+
+  useEffect(() => {
+    filterAndSortHosts();
+  }, [filterAndSortHosts]);
 
   const getBadge = (revenue) => {
     if (revenue > 500000) return "Platinum";

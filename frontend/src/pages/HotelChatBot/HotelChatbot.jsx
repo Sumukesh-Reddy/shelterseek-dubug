@@ -5,7 +5,7 @@ import "./HotelChatbot.css";
 
 const api = {
   sendMessageToBot: async (message, history) => {
-    const res = await fetch('http://localhost:3001/api/ai-chat', {
+    const res = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/ai-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, history }),
@@ -17,7 +17,7 @@ const api = {
     return res.json();
   },
   bookRoom: async (hotelId, bookingDetails) => {
-    const res = await fetch('http://localhost:3001/api/book', {
+    const res = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/book', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hotelId, bookingDetails }),

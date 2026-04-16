@@ -24,7 +24,7 @@ export const SocketProvider = ({ children }) => {
     console.log('🔄 Initializing socket connection with token');
     
     // SIMPLE CONNECTION - let Socket.IO handle transport negotiation
-    const newSocket = io('http://localhost:3001', {
+    const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3001', {
       auth: { token },
       transports: ['polling', 'websocket'], // Try polling first, then upgrade
       reconnection: true,

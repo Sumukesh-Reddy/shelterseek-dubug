@@ -192,10 +192,10 @@ const ImageGallery = ({ images }) => {
   // Process image URLs like in RoomLayout
   const processImageUrl = (img) => {
     if (img.startsWith('http')) return img;
-    if (img.startsWith('/')) return `http://localhost:3001${img}`;
+    if (img.startsWith('/')) return `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}${img}`;
     // ObjectId (24-hex) OR filename (images-xxx.jpg) — both served via /api/images/:id
     if (/^[0-9a-fA-F]{24}$/.test(img) || img.includes('.') || img.startsWith('images-')) {
-      return `http://localhost:3001/api/images/${img}`;
+      return `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/images/${img}`;
     }
     return '/images/logo.png';
   };
@@ -278,7 +278,7 @@ const AdminMapsView = () => {
   useEffect(() => {
     if (!hostEmail) return;
 
-    fetch(`http://localhost:3001/api/rooms/host/${hostEmail}`)
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms/host/${hostEmail}`)
       .then(res => res.json())
       .then(data => {
         const dataRooms =

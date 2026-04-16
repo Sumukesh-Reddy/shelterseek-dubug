@@ -23,7 +23,7 @@ const AdminMaps = () => {
         return room.hostImage;
       }
       if (/^[0-9a-fA-F]{24}$/.test(room.hostImage)) {
-        return `http://localhost:3001/api/images/${room.hostImage}`;
+        return `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/images/${room.hostImage}`;
       }
     }
     
@@ -31,7 +31,7 @@ const AdminMaps = () => {
     if (room.images && room.images.length > 0 && room.images[0]) {
       const firstImage = room.images[0];
       if (/^[0-9a-fA-F]{24}$/.test(firstImage)) {
-        return `http://localhost:3001/api/images/${firstImage}`;
+        return `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/images/${firstImage}`;
       }
     }
     
@@ -45,7 +45,7 @@ const AdminMaps = () => {
     
     try {
       // Fetch rooms data
-      const roomsResponse = await fetch('http://localhost:3001/api/rooms');
+      const roomsResponse = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
       
       if (!roomsResponse.ok) {
         throw new Error(`Failed to fetch rooms: ${roomsResponse.status}`);
@@ -125,7 +125,7 @@ const AdminMaps = () => {
       // Fallback to hosts API
       try {
         console.log('Trying fallback to hosts API...');
-        const hostsResponse = await fetch('http://localhost:3001/api/hosts');
+        const hostsResponse = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/hosts');
         
         if (hostsResponse.ok) {
           const hostsData = await hostsResponse.json();
@@ -157,7 +157,7 @@ const AdminMaps = () => {
             name: host.name || 'Unknown Host',
             email: host.email || host.userEmail || '',
             image: host.image ? 
-              (host.image.startsWith('http') ? host.image : `http://localhost:3001${host.image}`) 
+              (host.image.startsWith('http') ? host.image : `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}${host.image}`) 
               : '/images/logo.png',
             location: host.location || '',
             roomCount: 0,

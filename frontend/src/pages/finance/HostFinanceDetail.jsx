@@ -17,9 +17,7 @@ import {
 } from "recharts";
 import { 
   Download, 
-  Calendar, 
   TrendingUp, 
-  TrendingDown,
   DollarSign,
   Home,
   Users,
@@ -41,18 +39,14 @@ const HostFinanceDetail = () => {
   const [showCharts, setShowCharts] = useState(true);
   const [expandedStats, setExpandedStats] = useState({});
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState({
+  const [dateRange] = useState({
     start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
     end: new Date()
   });
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
-  useEffect(() => {
-    fetchData();
-  }, [email, timeRange, dateRange]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     setLoading(true);
     try {
       const queryParams = new URLSearchParams({
@@ -62,7 +56,7 @@ const HostFinanceDetail = () => {
       }).toString();
       
       const res = await fetch(
-        `http://localhost:3001/api/finance/host/${email}?${queryParams}`
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/finance/host/${email}?${queryParams}`
       );
       const result = await res.json();
       setData(result);
@@ -71,7 +65,11 @@ const HostFinanceDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, timeRange, dateRange]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleExportData = () => {
     // Prepare data for export

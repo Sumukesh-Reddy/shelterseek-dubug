@@ -64,7 +64,7 @@ const Payment = () => {
 
   const fetchRoomData = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/rooms');
+      const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
       if (response.ok) {
         const result = await response.json();
         if (result.status === 'success') {
@@ -394,7 +394,7 @@ const Payment = () => {
 
     try {
       // 1. Create order on the backend
-      const orderResponse = await fetch('http://localhost:3001/api/payment/create-order', {
+      const orderResponse = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: totalWithTax, currency: 'INR' })
@@ -416,7 +416,7 @@ const Payment = () => {
         handler: async function (response) {
           try {
             // 3. Verify payment on backend
-            const verifyRes = await fetch('http://localhost:3001/api/payment/verify', {
+            const verifyRes = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/payment/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -473,7 +473,7 @@ const Payment = () => {
           ? cardDetails.cardNumber.replace(/\s/g, '').slice(-4)
           : undefined;
 
-      const bookingResponse = await fetch('http://localhost:3001/api/bookings', {
+      const bookingResponse = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

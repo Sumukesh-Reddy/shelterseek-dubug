@@ -30,7 +30,7 @@ const FinanceDashboard = () => {
   }, []);
 
   const fetchDashboard = async () => {
-    const res = await fetch("http://localhost:3001/api/finance/dashboard");
+    const res = await fetch("${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/finance/dashboard");
     const result = await res.json();
     setData(result);
   };

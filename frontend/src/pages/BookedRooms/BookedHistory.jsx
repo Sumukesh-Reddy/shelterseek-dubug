@@ -26,7 +26,7 @@ const BookedHistory = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:3001/api/bookings/history', {
+      const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/bookings/history', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -49,7 +49,7 @@ const fetchTrendsData = useCallback(async () => {
     setLoading(true);
     const token = localStorage.getItem('token'); // Get token from localStorage
     
-    const res = await fetch("http://localhost:3001/api/admin/trends", {
+    const res = await fetch("${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/admin/trends", {
       headers: {
         'Authorization': `Bearer ${token}` // Add auth token
       }
