@@ -130,7 +130,7 @@ const RoomLayout = () => {
     const fetchRooms = async () => {
       setLoading(true);
       try {
-        const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms`);
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }
@@ -149,7 +149,7 @@ const RoomLayout = () => {
               try {
                 const user = JSON.parse(userStr);
                 if (user.accountType === 'traveller') {
-                  await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/viewed-rooms', {
+                  await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/viewed-rooms`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -357,7 +357,7 @@ const RoomLayout = () => {
       try {
         const user = JSON.parse(userStr);
         if (user.accountType === 'traveller') {
-          const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/liked-rooms', {
+          const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/liked-rooms`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

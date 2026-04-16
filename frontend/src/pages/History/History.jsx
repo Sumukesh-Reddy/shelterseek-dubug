@@ -67,7 +67,7 @@ const History = () => {
         try {
           const user = JSON.parse(userStr);
           if (user.accountType === 'traveller') {
-            const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/viewed-rooms', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/viewed-rooms`, {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -123,7 +123,7 @@ const History = () => {
       console.log('Fetching room details for:', historyEntries.length, 'entries');
       
       // Fetch all rooms
-      const roomsResponse = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
+      const roomsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms`);
       if (!roomsResponse.ok) {
         throw new Error(`Failed to fetch rooms (status ${roomsResponse.status})`);
       }
@@ -198,7 +198,7 @@ const History = () => {
         const user = JSON.parse(userStr);
         if (user.accountType === 'traveller') {
           // Optionally call an endpoint to clear server history
-          await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/clear-history', {
+          await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/clear-history`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,

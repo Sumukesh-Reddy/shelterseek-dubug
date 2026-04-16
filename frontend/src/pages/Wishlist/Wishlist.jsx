@@ -24,7 +24,7 @@ const Wishlist = () => {
           try {
             const user = JSON.parse(userStr);
             if (user.accountType === 'traveller') {
-              const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/liked-rooms', {
+              const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/users/traveler/liked-rooms`, {
                 headers: {
                   'Authorization': `Bearer ${token}`
                 }
@@ -59,7 +59,7 @@ const Wishlist = () => {
         }
 
         // Fetch all rooms from the API
-        const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms`);
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }
