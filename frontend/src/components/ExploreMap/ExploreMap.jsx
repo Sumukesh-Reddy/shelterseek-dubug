@@ -81,7 +81,7 @@ const ExplorerMap = ({ isOpen, onClose }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms`);
       const result = await response.json();
       
       if (result.status === "success" && Array.isArray(result.data)) {

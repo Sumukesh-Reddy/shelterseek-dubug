@@ -13,7 +13,7 @@ const HomeListings = ({ filters }) => {
     const fetchRooms = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }

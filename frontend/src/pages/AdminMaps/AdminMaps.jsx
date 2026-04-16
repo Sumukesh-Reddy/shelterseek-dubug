@@ -45,7 +45,7 @@ const AdminMaps = () => {
     
     try {
       // Fetch rooms data
-      const roomsResponse = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms');
+      const roomsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms`);
       
       if (!roomsResponse.ok) {
         throw new Error(`Failed to fetch rooms: ${roomsResponse.status}`);
@@ -125,7 +125,7 @@ const AdminMaps = () => {
       // Fallback to hosts API
       try {
         console.log('Trying fallback to hosts API...');
-        const hostsResponse = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/hosts');
+        const hostsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/hosts`);
         
         if (hostsResponse.ok) {
           const hostsData = await hostsResponse.json();

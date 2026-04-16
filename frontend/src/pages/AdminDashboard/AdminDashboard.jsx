@@ -37,7 +37,7 @@ function AdminDashboard() {
   // fetch data
   useEffect(() => {
     // Fetch booking summary (list)
-    fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/bookings/summarys')
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/bookings/summarys`)
       .then(res => res.json())
       .then(response => {
         if (response.success && Array.isArray(response.bookings)) {
@@ -57,7 +57,7 @@ function AdminDashboard() {
       });
 
     // Fetch room counts
-    fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms/count')
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/rooms/count`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -83,7 +83,7 @@ function AdminDashboard() {
       .finally(() => setLoadingRooms(false));
 
     // Fetch new customers
-    fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/admin/new-customers', {
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/admin/new-customers`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -102,7 +102,7 @@ function AdminDashboard() {
       });
 
     // Fetch recent activities
-    fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/admin/recent-activities', {
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/admin/recent-activities`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -116,7 +116,7 @@ function AdminDashboard() {
       .catch(() => setRecentActivities([]));
 
     // Fetch revenue
-    fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/admin/revenue', {
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/admin/revenue`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -132,7 +132,7 @@ function AdminDashboard() {
       .catch(() => {});
 
     // FIX: Fetch booking counts from /stats endpoint with cache-busting
-    fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/bookings/stats', {
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/bookings/stats`, {
       headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
     })
       .then(res => res.json())

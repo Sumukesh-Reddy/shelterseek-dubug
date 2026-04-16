@@ -49,7 +49,7 @@ const HostLogin = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/send-otp', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -78,7 +78,7 @@ const HostLogin = () => {
     setError('');
 
     try {
-      const otpRes = await fetch('${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/verify-otp', {
+      const otpRes = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: otpString })
