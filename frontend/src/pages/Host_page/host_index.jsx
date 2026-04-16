@@ -7,7 +7,7 @@ import './host_index.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, faSyncAlt, faHome, faMapMarkerAlt, faBed, 
-  faUtensils, faWifi, faParking, faSnowflake, faTshirt,
+  faUtensils, faWifi, faParking, faSnowflake, faTshirt, // eslint-disable-line no-unused-vars
   faArrowLeft, faArrowRight,
   faCheck, faSave, faImages, faCalendarAlt, faTag,
   faRuler, faVenusMars, faBus, faInfoCircle

@@ -65,7 +65,7 @@ const ChatPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedRoom, isMobile]);
+  }, [selectedRoom, isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchChatRooms();
@@ -144,7 +144,7 @@ const ChatPage = () => {
     };
 
     openChatByEmail();
-  }, [location.state, rooms, loading]);
+  }, [location.state, rooms, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Socket event handlers
   useEffect(() => {

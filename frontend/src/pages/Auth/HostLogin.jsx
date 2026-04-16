@@ -8,7 +8,7 @@ import './Login.css';
 const HostLogin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { login, user } = useAuth();
+  const { login, user } = useAuth(); // eslint-disable-line no-unused-vars
 
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');

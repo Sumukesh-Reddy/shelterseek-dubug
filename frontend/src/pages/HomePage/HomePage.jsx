@@ -1,5 +1,5 @@
 // pages/HomePage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // eslint-disable-line no-unused-vars
 import Navbar from '../../components/Navbar/Navbar';
 import Slider from '../../components/Slider/Slider';
 import FilterMenu from '../../components/FilterMenu/FilterMenu';

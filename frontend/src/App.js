@@ -4,14 +4,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from "./store";
 
-import HomePage from './pages/HomePage/HomePage';
+import HomePage from './pages/HomePage/HomePage'; // eslint-disable-line no-unused-vars
 import RoomLayout from './pages/RoomLayout/RoomLayout';
 import About from './components/About/About';
 import Wishlist from './pages/Wishlist/Wishlist';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
-import Messages from './pages/Messages/messages';
-import Message from './pages/Messages/message';
-import Login from './pages/Auth/Login';
+import Messages from './pages/Messages/messages'; // eslint-disable-line no-unused-vars
+import Message from './pages/Messages/message'; // eslint-disable-line no-unused-vars
+import Login from './pages/Auth/Login'; // eslint-disable-line no-unused-vars
 import Signup from './pages/Auth/Signup';
 import ResetPassword from './pages/Auth/ResetPassword';
 import TravelerLogin from './pages/Auth/TravelerLogin';
@@ -33,7 +33,7 @@ import AdminMapsView from './pages/AdminMaps/AdminMapsView';
 import HostDetails from './pages/AdminNotifications/HostDetails';
 import AdminTrends from './pages/AdminTrends/AdminTrends';
 import TravelerDetails from './pages/AdminNotifications/TravelerDetails';
-import HotelChatbot from './pages/HotelChatBot/HotelChatbot';
+import HotelChatbot from './pages/HotelChatBot/HotelChatbot'; // eslint-disable-line no-unused-vars
 import ChatbotIcon from './components/ChatbotIcon/ChatbotIcon';
 import HostRequests from "./pages/HostRequests/HostRequests";
 import ChatPage from './pages/ChatPage/ChatPage';

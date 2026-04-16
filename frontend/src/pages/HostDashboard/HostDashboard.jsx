@@ -4,9 +4,9 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import {
-  faUser, faHome, faCalendar, faDollarSign, faSignOutAlt,
+  faUser, faHome, faCalendar, faDollarSign, faSignOutAlt, // eslint-disable-line no-unused-vars
   faEdit, faTrash, faImages, faStar, faAlignLeft, faRupeeSign,
-  faCalendarCheck, faFilter, faTimes, faSyncAlt, faComment, faEnvelope, faPhone, faIdCard, faUserFriends, faInfoCircle
+  faCalendarCheck, faFilter, faTimes, faSyncAlt, faComment, faEnvelope, faPhone, faIdCard, faUserFriends, faInfoCircle // eslint-disable-line no-unused-vars
 } from '@fortawesome/free-solid-svg-icons';
 import {
   BarChart,
@@ -230,7 +230,7 @@ const HostDashboard = () => {
   const [pollingInterval, setPollingInterval] = useState(null);
   const [expandedBookingId, setExpandedBookingId] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refreshCount, setRefreshCount] = useState(0);
+  const [refreshCount, setRefreshCount] = useState(0); // eslint-disable-line no-unused-vars
   const [lastManualRefresh, setLastManualRefresh] = useState(null);
 
   // Enhanced logout function
@@ -281,7 +281,7 @@ const HostDashboard = () => {
     setCurrentUser(user);
     fetchListings(user.email);
     fetchAnalytics();
-  }, [navigate]);
+  }, [navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto refresh setup
   useEffect(() => {

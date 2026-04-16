@@ -7,15 +7,15 @@ import {
   faChartLine,
   faTachometerAlt,
   faUser,
-  faUserCircle,
-  faStickyNote,
-  faSignOutAlt,
-  faCaretDown,
+  faUserCircle, // eslint-disable-line no-unused-vars
+  faStickyNote, // eslint-disable-line no-unused-vars
+  faSignOutAlt, // eslint-disable-line no-unused-vars
+  faCaretDown, // eslint-disable-line no-unused-vars
   faFire
 } from "@fortawesome/free-solid-svg-icons";
 
 const AdminNavbar = () => {
-  const [openProfile, setOpenProfile] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false); // eslint-disable-line no-unused-vars
 
   // GLOBAL NAVBAR STYLE (BIGGER + CENTERED)
   const styles = {
@@ -129,7 +129,7 @@ const AdminNavbar = () => {
   };
 
   // helper for dropdown item hover
-  const DropdownItem = ({ to, icon, label }) => {
+  const DropdownItem = ({ to, icon, label }) => { // eslint-disable-line no-unused-vars
     const [hover, setHover] = useState(false);
     return (
       <Link

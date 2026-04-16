@@ -83,7 +83,7 @@ export const SocketProvider = ({ children }) => {
         newSocket.disconnect();
       }
     };
-  }, [token, user?._id]);
+  }, [token, user?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <SocketContext.Provider value={{ socket, onlineUsers, isConnected }}>

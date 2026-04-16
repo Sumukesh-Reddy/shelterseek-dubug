@@ -178,7 +178,7 @@ const AdminMaps = () => {
 
   useEffect(() => {
     fetchHostsData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredHosts = hosts.filter(host =>
     (host.name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||

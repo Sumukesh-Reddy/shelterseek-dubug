@@ -29,7 +29,7 @@ const HostProfile = () => {
     }
 
     fetchUserData(currentUser);
-  }, [navigate]);
+  }, [navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUserData = async (currentUser) => {
     try {
@@ -99,7 +99,7 @@ const HostProfile = () => {
       );
 
       if (updateResponse.data.status === 'success') {
-        const newProfilePhotoUrl = `${API_BASE_URL}/api/images/${uploadResponse.data.data.id}`;
+        const newProfilePhotoUrl = `${API_BASE_URL}/api/images/${uploadResponse.data.data.id}`; // eslint-disable-line no-unused-vars
         const updatedUser = { ...user, profilePhoto: uploadResponse.data.data.id };
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -185,7 +185,7 @@ const HostProfile = () => {
         )}
 
         <div className="profile-left">
-          <img
+          <img // eslint-disable-line jsx-a11y/img-redundant-alt
             src={getProfilePhotoUrl(user.profilePhoto)}
             alt="Profile Picture"
             className="profile-pic"

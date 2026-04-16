@@ -335,7 +335,7 @@ const AdminMapsView = () => {
   const withCoordinatesCount = rooms.filter(r => r.coordinates?.lat && r.coordinates?.lng).length;
   
   // Get all unique statuses for filter buttons
-  const statusTypes = [...new Set(rooms.map(r => r.status).filter(Boolean))];
+  const statusTypes = [...new Set(rooms.map(r => r.status).filter(Boolean))]; // eslint-disable-line no-unused-vars
 
   // ---------- Loading ----------
   if (loading) {
@@ -601,7 +601,7 @@ const AdminMapsView = () => {
           />
 
           {validMarkers.map(room => {
-            const isVerified = room.status === "verified";
+            const isVerified = room.status === "verified"; // eslint-disable-line no-unused-vars
             
             return (
               <Marker

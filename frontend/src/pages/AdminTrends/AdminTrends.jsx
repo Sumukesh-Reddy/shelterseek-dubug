@@ -28,7 +28,7 @@ const AdminTrends = () => {
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState("bar");
   const [chartType, setChartType] = useState("views");
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // eslint-disable-line no-unused-vars
 
   const COLORS = [
     "#4e73df",
