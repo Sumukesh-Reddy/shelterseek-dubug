@@ -2,8 +2,14 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
-// Upload file to GridFS
+// Upload file to GridFS (Intercepts Cloudinary)
 const uploadToGridFS = async (file, bucketName = 'images') => {
+  // If file was uploaded to Cloudinary by multer, simply return its URL
+  if (file && file.path && file.path.startsWith('http')) {
+    console.log(`✅ File already in Cloudinary: ${file.originalname} -> ${file.path}`);
+    return file.path;
+  }
+
   if (!global.gfsBucket) {
     throw new Error('GridFS bucket not initialized');
   }
@@ -102,6 +108,23 @@ const deleteFromGridFS = async (fileId, bucketName = 'images') => {
   }
 
   try {
+    // If it's a Cloudinary URL, we can attempt to delete it using the ID derived from the URL, or simply skip
+    if (String(fileId).startsWith('http')) {
+      // Deletion of Cloudinary image normally requires the public_id, but skipping is safe for basic setups.
+      console.log(`Skipping GridFS delete for Cloudinary URL: ${fileId}`);
+      try {
+        const cloudinary = require('cloudinary').v2;
+        // Basic extraction of public_id from Cloudinary URL (e.g., .../upload/v1234/shelterseek/abc.jpg)
+        const parts = fileId.split('/');
+        const filename = parts.pop();
+        const publicId = 'shelterseek/' + filename.split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (e) {
+        console.error('Failed to scrub from cloudinary:', e.message);
+      }
+      return true;
+    }
+
     // If fileId looks like an ObjectId, attempt GridFS delete
     if (mongoose.Types.ObjectId.isValid(fileId)) {
       await global.gfsBucket.delete(new mongoose.Types.ObjectId(fileId));
