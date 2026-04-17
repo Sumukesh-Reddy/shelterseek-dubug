@@ -577,6 +577,22 @@ body {
     grid-column: 1 / -1;
 }
 
+.room-global-error-page {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    color: #ef4444;
+    font-size: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem auto;
+    max-width: 600px;
+}
+
 .room-review-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -640,27 +656,57 @@ body {
     font-style: italic;
 }
 
-/* Error Messages */
+/* Premium Toast Notifications */
 .room-global-error {
     position: fixed;
-    top: 1rem;
+    top: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    background: #f8d7da;
-    color: #721c24;
+    min-width: 320px;
     padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    animation: slideDown 0.3s ease;
+    gap: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    animation: toastSlideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: #333;
+    font-weight: 500;
 }
 
-@keyframes slideDown {
+.room-global-error.room-success {
+    background: rgba(236, 253, 245, 0.9);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: #065f46;
+}
+
+.room-global-error.room-error {
+    background: rgba(254, 242, 242, 0.9);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #991b1b;
+}
+
+.room-global-error svg {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.room-global-error.room-success svg {
+    color: #10b981;
+}
+
+.room-global-error.room-error svg {
+    color: #ef4444;
+}
+
+@keyframes toastSlideDown {
     from {
-        transform: translateX(-50%) translateY(-100%);
+        transform: translateX(-50%) translateY(-2rem);
         opacity: 0;
     }
     to {

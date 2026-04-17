@@ -20,7 +20,9 @@ import {
   faSnowflake,
   faTint,
   faUser,
-  faEnvelope
+  faEnvelope,
+  faCheckCircle,
+  faInfoCircle
 } from '@fortawesome/free-solid-svg-icons';
 import './RoomLayout.css';
 import Footer from '../../components/Footer/Footer';
@@ -34,7 +36,8 @@ const RoomLayout = () => {
   const [likedHomes, setLikedHomes] = useState([]);
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
-  const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [globalError, setGlobalError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const calendarRef = useRef(null);
@@ -163,14 +166,14 @@ const RoomLayout = () => {
               }
             }
           } else {
-            setError("Room not found");
+            setGlobalError("Room not found");
           }
         } else {
-          setError("Failed to fetch rooms data");
+          setGlobalError("Failed to fetch rooms data");
         }
       } catch (error) {
         console.error("Error fetching rooms:", error);
-        setError("Failed to load room details. Please try again later.");
+        setGlobalError("Failed to load room details. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -328,13 +331,13 @@ const RoomLayout = () => {
   };
 
   const showSuccessMessage = (message) => {
-    setError({ type: 'success', message });
-    setTimeout(() => setError(null), 3000);
+    setNotification({ type: 'success', message, icon: faCheckCircle });
+    setTimeout(() => setNotification(null), 3000);
   };
 
   const showErrorMessage = (message) => {
-    setError({ type: 'error', message });
-    setTimeout(() => setError(null), 5000);
+    setNotification({ type: 'error', message, icon: faExclamationCircle });
+    setTimeout(() => setNotification(null), 5000);
   };
 
   const handleSave = async () => {
@@ -672,15 +675,15 @@ const RoomLayout = () => {
     );
   }
 
-  if (error && typeof error === 'string' && !room) {
+  if (globalError && !room) {
     return (
       <>
         <Navbar />
         <div className="room-room-details-container">
-          <div className="room-global-error">
+          <div className="room-global-error-page">
             <div className="room-error-content">
               <FontAwesomeIcon icon={faExclamationCircle} />
-              <span>{error}</span>
+              <span>{globalError}</span>
             </div>
           </div>
         </div>
@@ -710,12 +713,10 @@ const RoomLayout = () => {
     <>
       <Navbar />
       
-      {error && (
-        <div className={`room-global-error ${error.type === 'success' ? 'room-success' : ''}`}>
-          <div className="room-error-content">
-            <FontAwesomeIcon icon={faExclamationCircle} />
-            <span>{error.message}</span>
-          </div>
+      {notification && (
+        <div className={`room-global-error room-${notification.type}`}>
+          <FontAwesomeIcon icon={notification.icon} />
+          <span>{notification.message}</span>
         </div>
       )}
 
