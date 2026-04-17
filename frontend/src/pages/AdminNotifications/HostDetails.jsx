@@ -236,7 +236,7 @@ function HostDetails() {
                     {room.images.map((imgId) => (
                       <img
                         key={imgId}
-                        src={`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/images/${imgId}`}
+                        src={imgId && imgId.startsWith('http') ? imgId : `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/images/${imgId}`}
                         alt="Room"
                         style={styles.img}
                         onError={(e) => {

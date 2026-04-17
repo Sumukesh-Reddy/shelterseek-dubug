@@ -882,7 +882,16 @@ const HostDashboard = () => {
                             <strong>Images:</strong>
                             <div style={styles.imageGallery}>
                               {listing.images.map((imgId, idx) => (
-                                <img key={idx} src={`${API_BASE_URL}/api/images/${imgId}`} alt="Listing" style={styles.listingImage} />
+                                <img 
+                                  key={idx} 
+                                  src={imgId && imgId.startsWith('http') ? imgId : `${API_BASE_URL}/api/images/${imgId}`} 
+                                  alt="Listing" 
+                                  style={styles.listingImage} 
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = '/images/placeholder.png';
+                                  }}
+                                />
                               ))}
                             </div>
                           </div>

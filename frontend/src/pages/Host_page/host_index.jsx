@@ -586,7 +586,7 @@ const Step5Media = ({
               {existingImages.map((imgId) => (
                 <div key={imgId} className="preview-item">
                   <img
-                    src={`${API_BASE_URL}/api/images/${imgId}`}
+                    src={imgId && imgId.startsWith('http') ? imgId : `${API_BASE_URL}/api/images/${imgId}`}
                     alt="Existing"
                     className="preview-image"
                     onError={(e) => {
