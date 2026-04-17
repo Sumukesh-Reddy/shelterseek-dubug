@@ -98,7 +98,8 @@ exports.createListing = catchAsync(async (req, res, next) => {
     });
   } catch (error) {
     console.error('❌ Error in createListing:', error);
-    return next(new AppError(error.message || 'Failed to create listing', 500));
+    const message = typeof error === 'string' ? error : (error.message || 'Failed to create listing');
+    return next(new AppError(message, 500));
   }
 });
 
@@ -208,7 +209,8 @@ exports.updateListing = catchAsync(async (req, res, next) => {
     });
   } catch (error) {
     console.error('❌ Error in updateListing:', error);
-    return next(new AppError(error.message || 'Failed to update listing', 500));
+    const message = typeof error === 'string' ? error : (error.message || 'Failed to update listing');
+    return next(new AppError(message, 500));
   }
 });
 

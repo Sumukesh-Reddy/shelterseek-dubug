@@ -64,8 +64,15 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
   } else {
-    let error = { ...err };
-    error.message = err.message;
+    let error = {};
+    if (err && typeof err === 'object') {
+      error = { ...err };
+      error.message = err.message || 'Something went wrong';
+      error.name = err.name;
+      error.stack = err.stack;
+    } else {
+      error.message = String(err || 'Something went wrong');
+    }
 
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);

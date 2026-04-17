@@ -182,7 +182,11 @@ app.get('/debug-env', (req, res) => {
     EMAIL_PASS: process.env.EMAIL_PASS ? `Set (${process.env.EMAIL_PASS.length} chars)` : 'Not set',
     NODE_ENV: process.env.NODE_ENV,
     MONGODB_URI: process.env.MONGODB_URI ? 'Set' : 'Not set',
-    FRONTEND_URL: process.env.FRONTEND_URL || 'Not set'
+    FRONTEND_URL: process.env.FRONTEND_URL || 'Not set',
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? 'Set' : 'Not set',
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? 'Set' : 'Not set',
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? `Set (${process.env.CLOUDINARY_API_SECRET.length} chars)` : 'Not set',
+    MONGODB_READY: !!global.hostAdminConnection
   });
 });
 

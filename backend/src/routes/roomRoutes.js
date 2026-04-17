@@ -1,10 +1,10 @@
 const { cacheMiddleware } = require('../middleware/cacheMiddleware');
-// routes/roomRoutes.js
 const express = require('express');
 const roomController = require('../controllers/roomController');
 const hostController = require('../controllers/hostController');
 const { authenticateToken, roleMiddleware } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
+const AppError = require('../utils/appError');
 
 const router = express.Router();
 
@@ -22,14 +22,24 @@ router.get('/listings/:id', hostController.getListingById);    // GET single lis
 router.post('/listings',
   authenticateToken,
   roleMiddleware.hostOnly,
-  upload.array('images', 12),
+  (req, res, next) => {
+    upload.array('images', 12)(req, res, (err) => {
+      if (err) return next(new AppError(err.message || 'Image upload failed', 400));
+      next();
+    });
+  },
   hostController.createListing
 );
 
 router.put('/listings/:id',
   authenticateToken,
   roleMiddleware.hostOnly,
-  upload.array('images', 12),
+  (req, res, next) => {
+    upload.array('images', 12)(req, res, (err) => {
+      if (err) return next(new AppError(err.message || 'Image upload failed', 400));
+      next();
+    });
+  },
   hostController.updateListing
 );
 
@@ -84,5 +94,4 @@ router.get('/listings/:listingId/qr',
     hostController.generateQRCode
   );
 
-  
 module.exports = router;
