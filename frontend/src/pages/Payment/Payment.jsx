@@ -32,7 +32,7 @@ const Payment = () => {
   // eslint-disable-next-line no-unused-vars
   const [upiId, setUpiId] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
-  
+
   const roomId = searchParams.get('id');
   const checkIn = searchParams.get('checkIn');
   const checkOut = searchParams.get('checkOut');
@@ -83,8 +83,8 @@ const Payment = () => {
   };
 
   const formatCurrency = (number) => {
-    return new Intl.NumberFormat('en-IN', { 
-      style: 'currency', 
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(number);
@@ -93,10 +93,10 @@ const Payment = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
@@ -117,11 +117,11 @@ const Payment = () => {
 
   const validateGovtId = (idType, idNumber) => {
     if (!idNumber) return true; // Optional field
-    
+
     const cleanId = idNumber.trim();
     if (!cleanId) return true;
-    
-    switch(idType) {
+
+    switch (idType) {
       case 'aadhar':
         return /^\d{12}$/.test(cleanId);
       case 'pan_card':
@@ -141,23 +141,23 @@ const Payment = () => {
   const validateCardNumber = (cardNumber) => {
     const cleaned = cardNumber.replace(/\s/g, '');
     if (!/^\d{16}$/.test(cleaned)) return false;
-    
+
     // Luhn algorithm validation
     let sum = 0;
     let isEven = false;
-    
+
     for (let i = cleaned.length - 1; i >= 0; i--) {
       let digit = parseInt(cleaned.charAt(i), 10);
-      
+
       if (isEven) {
         digit *= 2;
         if (digit > 9) digit -= 9;
       }
-      
+
       sum += digit;
       isEven = !isEven;
     }
-    
+
     return (sum % 10) === 0;
   };
 
@@ -165,35 +165,35 @@ const Payment = () => {
   const validateExpiryDate = (month, year) => {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
-    
+
     // Validate year format and range
     if (!/^\d{4}$/.test(year)) return false;
     const expiryYear = parseInt(year, 10);
-    
+
     if (expiryYear < currentYear || expiryYear > currentYear + 20) {
       return false;
     }
-    
+
     // Validate month format and range
     if (!/^\d{1,2}$/.test(month)) return false;
     const expiryMonth = parseInt(month, 10);
-    
+
     if (expiryMonth < 1 || expiryMonth > 12) {
       return false;
     }
-    
+
     // Check if card is expired
     if (expiryYear === currentYear && expiryMonth < currentMonth) {
       return false;
     }
-    
+
     return true;
   };
 
   // eslint-disable-next-line no-unused-vars
   const validateCVV = (cvv, cardType) => {
     if (!/^\d{3,4}$/.test(cvv)) return false;
-    
+
     // American Express CVV is 4 digits, others are 3
     if (cardType === 'amex') {
       return cvv.length === 4;
@@ -216,7 +216,7 @@ const Payment = () => {
     }]);
     // Clear guest-specific errors
     setFormErrors(prev => {
-      const newErrors = {...prev};
+      const newErrors = { ...prev };
       Object.keys(newErrors).forEach(key => {
         if (key.includes('guest_')) {
           delete newErrors[key];
@@ -237,11 +237,11 @@ const Payment = () => {
     const updatedGuests = [...guestDetails];
     updatedGuests[index][field] = value;
     setGuestDetails(updatedGuests);
-    
+
     // Clear specific error when user starts typing
     if (formErrors[`guest_${index}_${field}`]) {
       setFormErrors(prev => {
-        const newErrors = {...prev};
+        const newErrors = { ...prev };
         delete newErrors[`guest_${index}_${field}`];
         return newErrors;
       });
@@ -253,12 +253,12 @@ const Payment = () => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 16) value = value.substring(0, 16);
     value = value.replace(/(.{4})/g, '$1 ').trim();
-    setCardDetails({...cardDetails, cardNumber: value});
-    
+    setCardDetails({ ...cardDetails, cardNumber: value });
+
     // Clear error when user starts typing
     if (formErrors.cardNumber) {
       setFormErrors(prev => {
-        const newErrors = {...prev};
+        const newErrors = { ...prev };
         delete newErrors.cardNumber;
         return newErrors;
       });
@@ -270,12 +270,12 @@ const Payment = () => {
     let value = e.target.value.replace(/\D/g, '');
     if (field === 'expiryMonth' && value.length > 2) value = value.substring(0, 2);
     if (field === 'expiryYear' && value.length > 4) value = value.substring(0, 4);
-    setCardDetails({...cardDetails, [field]: value});
-    
+    setCardDetails({ ...cardDetails, [field]: value });
+
     // Clear error when user starts typing
     if (formErrors.expiryDate) {
       setFormErrors(prev => {
-        const newErrors = {...prev};
+        const newErrors = { ...prev };
         delete newErrors.expiryDate;
         return newErrors;
       });
@@ -286,12 +286,12 @@ const Payment = () => {
   const handleCVVChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 4) value = value.substring(0, 4);
-    setCardDetails({...cardDetails, cvv: value});
-    
+    setCardDetails({ ...cardDetails, cvv: value });
+
     // Clear error when user starts typing
     if (formErrors.cvv) {
       setFormErrors(prev => {
-        const newErrors = {...prev};
+        const newErrors = { ...prev };
         delete newErrors.cvv;
         return newErrors;
       });
@@ -300,18 +300,18 @@ const Payment = () => {
 
   const validateForm = () => {
     const errors = {};
-    
+
     // Validate guest details
     for (let i = 0; i < guestDetails.length; i++) {
       const guest = guestDetails[i];
-      
+
       // Name validation
       if (!guest.guestName.trim()) {
         errors[`guest_${i}_name`] = `Guest ${i + 1}: Name is required`;
       } else if (guest.guestName.trim().length < 2) {
         errors[`guest_${i}_name`] = `Guest ${i + 1}: Name must be at least 2 characters`;
       }
-      
+
       // Age validation
       if (guest.guestAge) {
         const age = parseInt(guest.guestAge, 10);
@@ -319,18 +319,18 @@ const Payment = () => {
           errors[`guest_${i}_age`] = `Guest ${i + 1}: Age must be between 0 and 120`;
         }
       }
-      
+
       // Contact validation
       if (guest.guestContact) {
         if (!validateContact(guest.guestContact)) {
           errors[`guest_${i}_contact`] = `Guest ${i + 1}: Please enter a valid email or phone number`;
         }
       }
-      
+
       // Government ID validation
       if (guest.govtIdNumber && !validateGovtId(guest.govtIdType, guest.govtIdNumber)) {
         let idName = '';
-        switch(guest.govtIdType) {
+        switch (guest.govtIdType) {
           case 'aadhar': idName = 'Aadhar'; break;
           case 'pan_card': idName = 'PAN'; break;
           case 'passport': idName = 'Passport'; break;
@@ -341,14 +341,14 @@ const Payment = () => {
         errors[`guest_${i}_id`] = `Guest ${i + 1}: Please enter a valid ${idName} number`;
       }
     }
-    
+
     // Razorpay handles all payment method validation natively.
-    
+
     // Special requests length validation
     if (specialRequests.length > 500) {
       errors.specialRequests = 'Special requests cannot exceed 500 characters';
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -408,7 +408,7 @@ const Payment = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: totalWithTax, currency: 'INR' })
       });
-      
+
       const orderData = await orderResponse.json();
       if (!orderData.success) {
         throw new Error(orderData.message || 'Failed to initialize payment');
@@ -435,7 +435,7 @@ const Payment = () => {
               })
             });
             const verifyData = await verifyRes.json();
-            
+
             if (verifyData.success) {
               // 4. Create actual booking
               await submitBooking(response.razorpay_payment_id, token, user);
@@ -475,12 +475,12 @@ const Payment = () => {
 
   const submitBooking = async (transactionId, token, user) => {
     try {
-      const cardType = paymentMethod === 'credit_card' && cardDetails.cardNumber 
-          ? getCardType(cardDetails.cardNumber.replace(/\s/g, '')) 
-          : undefined;
+      const cardType = paymentMethod === 'credit_card' && cardDetails.cardNumber
+        ? getCardType(cardDetails.cardNumber.replace(/\s/g, ''))
+        : undefined;
       const cardLastFour = paymentMethod === 'credit_card' && cardDetails.cardNumber
-          ? cardDetails.cardNumber.replace(/\s/g, '').slice(-4)
-          : undefined;
+        ? cardDetails.cardNumber.replace(/\s/g, '').slice(-4)
+        : undefined;
 
       const bookingResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/bookings`, {
         method: 'POST',
@@ -523,9 +523,9 @@ const Payment = () => {
         setCardDetails({ cardNumber: '', cardHolder: '', expiryMonth: '', expiryYear: '', cvv: '' });
         setUpiId('');
         setSpecialRequests('');
-        
+
         alert(`Booking confirmed!\nBooking ID: ${bookingResult.bookingId}\nTransaction ID: ${transactionId}`);
-        
+
         const bookingInfo = {
           bookingId: bookingResult.bookingId,
           transactionId: transactionId,
@@ -537,11 +537,11 @@ const Payment = () => {
           guests: guestDetails,
           bookedAt: new Date().toISOString()
         };
-        
+
         const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
         userBookings.push(bookingInfo);
         localStorage.setItem('userBookings', JSON.stringify(userBookings));
-        
+
         navigate('/BookedHistory');
       } else {
         setError(bookingResult.message || 'Failed to complete booking');
@@ -587,11 +587,11 @@ const Payment = () => {
         <div className="payment-content">
           <div className="payment-left">
             <h1>Booking Summary</h1>
-            
+
             <div className="booking-details-card">
               <h2>{title || 'Property Booking'}</h2>
               <p className="location">{location || 'Location'}</p>
-              
+
               <div className="booking-dates">
                 <div className="date-item">
                   <strong>Check-in:</strong>
@@ -641,8 +641,8 @@ const Payment = () => {
                     <div className="guest-header">
                       <h4>Guest {index + 1} {index === 0 && '(Primary)'}</h4>
                       {guestDetails.length > 1 && (
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           className="remove-guest-btn"
                           onClick={() => handleRemoveGuest(index)}
                         >
@@ -740,10 +740,10 @@ const Payment = () => {
                     </div>
                   </div>
                 ))}
-                
+
                 {guestDetails.length < (roomData?.capacity || 4) && (
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="add-guest-btn"
                     onClick={handleAddGuest}
                   >
@@ -761,7 +761,7 @@ const Payment = () => {
                     setSpecialRequests(e.target.value);
                     if (formErrors.specialRequests) {
                       setFormErrors(prev => {
-                        const newErrors = {...prev};
+                        const newErrors = { ...prev };
                         delete newErrors.specialRequests;
                         return newErrors;
                       });
@@ -784,7 +784,7 @@ const Payment = () => {
           <div className="payment-right">
             <div className="payment-card">
               <h2>Payment Details</h2>
-              
+
               <div className="price-breakdown">
                 <div className="price-row">
                   <span>Price per night:</span>
@@ -825,8 +825,8 @@ const Payment = () => {
                 </div>
               )}
 
-              <button 
-                className="payment-button" 
+              <button
+                className="payment-button"
                 onClick={handlePayment}
                 disabled={loading}
               >
@@ -834,26 +834,11 @@ const Payment = () => {
               </button>
 
               <p className="payment-note">
-                By confirming, you agree to our terms and conditions. 
+                By confirming, you agree to our terms and conditions.
                 Your payment is secure and encrypted.
               </p>
             </div>
 
-            <div className="host-contact">
-              <h3>Host Contact</h3>
-              <p>Email: {hostEmail || 'N/A'}</p>
-              <button 
-                className="contact-host-button"
-                onClick={() => navigate('/message', { 
-                  state: { 
-                    hostEmail: hostEmail,
-                    hostName: roomData?.name || 'Host'
-                  }
-                })}
-              >
-                Message Host
-              </button>
-            </div>
           </div>
         </div>
       </div>
