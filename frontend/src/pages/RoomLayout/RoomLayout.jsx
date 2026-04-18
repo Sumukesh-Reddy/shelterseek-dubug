@@ -21,8 +21,7 @@ import {
   faTint,
   faUser,
   faEnvelope,
-  faCheckCircle,
-  faInfoCircle
+  faCheckCircle
 } from '@fortawesome/free-solid-svg-icons';
 import './RoomLayout.css';
 import Footer from '../../components/Footer/Footer';
