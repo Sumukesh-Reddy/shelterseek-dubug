@@ -1,3 +1,32 @@
+/* Opening Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Base Styles */
 .payment-container {
   min-height: calc(100vh - 200px);
   padding: 40px 20px;
@@ -12,18 +41,51 @@
   margin-top: 20px;
 }
 
+/* Apply animations to columns */
+.payment-left {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.payment-right {
+  animation: slideInRight 0.6s ease-out 0.2s forwards;
+  opacity: 0; /* Keep hidden before animation finishes */
+}
+
 .payment-left h1 {
   color: #d72d6e;
   margin-bottom: 30px;
   font-size: 2rem;
+  position: relative;
+  display: inline-block;
+}
+
+.payment-left h1::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 50%;
+  height: 3px;
+  background: #d72d6e;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.payment-left h1:hover::after {
+  width: 100%;
 }
 
 .booking-details-card {
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   margin-bottom: 20px;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.booking-details-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .booking-details-card h2 {
@@ -52,6 +114,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.date-item:hover {
+  transform: translateX(4px);
 }
 
 .date-item strong {
@@ -60,25 +127,33 @@
 
 .date-item span {
   color: #666;
+  background: #f9f9f9;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.95rem;
 }
 
-.room-details {
-  margin-top: 20px;
-  padding-top: 20px;
+.room-details, .guest-section, .special-requests {
+  margin-top: 25px;
+  padding-top: 25px;
   border-top: 1px solid #eee;
 }
 
-.room-details h3 {
+.room-details h3, .guest-section h3, .special-requests h3 {
   color: #d72d6e;
-  margin-bottom: 15px;
-  font-size: 1.2rem;
+  margin-bottom: 20px;
+  font-size: 1.25rem;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 10px 0;
+  border-bottom: 1px dashed #f0f0f0;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
 }
 
 .detail-row span:first-child {
@@ -90,39 +165,169 @@
   font-weight: 500;
 }
 
-.amenities-summary {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+/* Guest Forms Extracted */
+.guest-card {
+  border: 1px solid #eee;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  background: #fafafa;
+  transition: background-color 0.3s, box-shadow 0.3s;
 }
 
-.amenities-summary h3 {
-  color: #d72d6e;
+.guest-card:hover {
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.guest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 15px;
-  font-size: 1.2rem;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
 }
 
-.amenities-summary ul {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+.guest-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
 }
 
-.amenities-summary li {
-  padding: 8px;
-  background: #f9f9f9;
-  border-radius: 6px;
-  color: #666;
+.remove-guest-btn {
+  background: rgba(211, 47, 47, 0.1);
+  border: none;
+  color: #d32f2f;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
 }
 
+.remove-guest-btn:hover {
+  background: #d32f2f;
+  color: white;
+}
+
+.guest-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #444;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #d72d6e;
+  box-shadow: 0 0 0 3px rgba(215, 45, 110, 0.15);
+}
+
+.form-group input.error {
+  border-color: #d32f2f;
+  background: #fffafa;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.add-guest-btn {
+  background: rgba(215, 45, 110, 0.05);
+  color: #d72d6e;
+  border: 2px dashed rgba(215, 45, 110, 0.3);
+  padding: 12px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.add-guest-btn:hover {
+  background: rgba(215, 45, 110, 0.1);
+  border-color: #d72d6e;
+}
+
+.special-requests textarea {
+  width: 100%;
+  padding: 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.special-requests textarea:focus {
+  outline: none;
+  border-color: #d72d6e;
+  box-shadow: 0 0 0 3px rgba(215, 45, 110, 0.15);
+}
+
+.special-requests textarea.error {
+  border-color: #d32f2f;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 6px;
+}
+
+/* Right Section - Payment details */
 .payment-card {
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 100px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.payment-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .payment-card h2 {
@@ -145,55 +350,109 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 1rem;
 }
 
 .price-row.discount {
   color: #28a745;
+  font-weight: 500;
 }
 
 .price-row.total {
-  padding-top: 15px;
-  border-top: 2px solid #eee;
+  padding-top: 20px;
+  border-top: 2px dashed #eee;
   margin-top: 10px;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  color: #222;
 }
 
+/* Pay Button Animations */
 .payment-button {
   width: 100%;
-  padding: 15px;
+  padding: 16px;
   background: #d72d6e;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(215, 45, 110, 0.3);
 }
 
 .payment-button:hover:not(:disabled) {
   background: #b5255a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(215, 45, 110, 0.4);
 }
 
+.payment-button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(215, 45, 110, 0.3);
+}
+
+/* Loading state specific styles */
 .payment-button:disabled {
-  background: #ccc;
+  background: #a9a9a9;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  color: transparent;
+}
+
+.payment-button:disabled::before {
+  content: "Processing...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.payment-button:disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    rgba(255,255,255,0.1), 
+    rgba(255,255,255,0.3), 
+    rgba(255,255,255,0.1)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  z-index: 1;
 }
 
 .payment-error-message {
-  background: #fee;
-  color: #c33;
+  background: #fff0f0;
+  color: #d32f2f;
   padding: 15px;
   border-radius: 8px;
   margin: 15px 0;
-  border: 1px solid #fcc;
+  border: 1px solid #fad2d2;
+  animation: fadeInUp 0.4s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.payment-error-message::before {
+  content: "⚠️";
 }
 
 .payment-note {
   margin-top: 20px;
   font-size: 0.85rem;
-  color: #666;
+  color: #777;
   text-align: center;
   line-height: 1.5;
 }
@@ -219,50 +478,138 @@
 
 .contact-host-button {
   width: 100%;
-  padding: 10px;
-  background: #f0f0f0;
+  padding: 12px;
+  background: white;
   color: #333;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .contact-host-button:hover {
-  background: #e0e0e0;
+  background: #f8f8f8;
+  border-color: #ccc;
 }
 
 .payment-error {
   text-align: center;
-  padding: 60px 20px;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  animation: fadeInUp 0.5s ease-out;
 }
 
 .payment-error h2 {
   color: #d72d6e;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+}
+
+.payment-error p {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 1.1rem;
 }
 
 .payment-error button {
-  padding: 12px 24px;
+  padding: 14px 28px;
   background: #d72d6e;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
-  margin-top: 20px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .payment-error button:hover {
   background: #b5255a;
+  transform: translateY(-2px);
 }
 
+/* Mobile Responsiveness */
 @media (max-width: 968px) {
   .payment-content {
     grid-template-columns: 1fr;
+    gap: 25px;
   }
   
   .payment-card {
     position: static;
+  }
+
+  .payment-right {
+    /* If the right side stacks below, it should slide upwards instead of from right side */
+    animation: fadeInUp 0.6s ease-out 0.2s forwards;
+  }
+}
+
+@media (max-width: 768px) {
+  .payment-container {
+    padding: 20px 15px;
+    min-height: calc(100vh - 150px);
+  }
+  
+  .payment-left h1 {
+    font-size: 1.75rem;
+  }
+
+  .booking-details-card, .payment-card {
+    padding: 20px 15px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .date-item {
+    font-size: 0.95rem;
+  }
+
+  .price-row {
+    font-size: 0.95rem;
+  }
+
+  .price-row.total {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-left h1 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+
+  .booking-details-card h2, .payment-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .guest-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .remove-guest-btn {
+    align-self: flex-start;
+  }
+
+  .date-item span {
+    padding: 3px 10px;
+    font-size: 0.85rem;
+  }
+
+  .detail-row span, .price-row span {
+    font-size: 0.9rem;
+  }
+  
+  .payment-button {
+    padding: 14px;
+    font-size: 1.05rem;
   }
 }

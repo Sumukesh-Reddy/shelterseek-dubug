@@ -97,24 +97,26 @@ const HomeBlock = ({ room }) => {
       </div>
       <hr style={{ opacity: 0.3 }} />
       <div className="home-content">
-        <h3>{room.title || 'Untitled Property'}</h3>
-        <p>Location: {room.location || 'Location not specified'}</p>
-        <p className="price">
-          ₹{Math.round(room.price * (1 - (room.discount || 0) / 100))}
+        <h3 className="home-title">{room.title || 'Untitled Property'}</h3>
+        <p className="home-location">{room.location || 'Location not specified'}</p>
+        
+        <div className="price-container">
+          <p className="price">
+            ₹{Math.round(room.price * (1 - (room.discount || 0) / 100))}
+          </p>
           {room.discount > 0 && (
             <>
-              <br />
-              <span className="old-price">
-                ₹{room.price}
-              </span>
-              <br />
-              <span className="discount" >
-                Discount: {room.discount}% off
-              </span>
+              <span className="old-price">₹{room.price}</span>
+              <span className="discount-pill">{room.discount}% OFF</span>
             </>
           )}
+        </div>
+        
+        <p className="home-description">
+          {room.description ? 
+            (room.description.length > 80 ? room.description.substring(0, 80) + '...' : room.description) 
+            : 'No description available'}
         </p>
-        <p>{room.description || 'No description available'}</p>
       </div>
     </div>
   );

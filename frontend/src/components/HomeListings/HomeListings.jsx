@@ -112,15 +112,32 @@ const HomeListings = ({ filters }) => {
     console.log('Filtered rooms:', filteredRooms);
   }, [filteredRooms]);
 
+  const SkeletonLoader = () => (
+    <>
+      {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+        <div key={n} className="skeleton-card">
+          <div className="skeleton skeleton-image"></div>
+          <div className="skeleton-info">
+            <div className="skeleton skeleton-title"></div>
+            <div className="skeleton skeleton-text"></div>
+            <div className="skeleton skeleton-price"></div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+
   return (
     <div className="main-home-block" id="homes-container">
-      {isLoading && <div className="loading">Loading...</div>}
-      {error && <div className="error-message">{error}</div>}
+      {isLoading && <SkeletonLoader />}
+      {error && <div className="error-message animate-fade-in">{error}</div>}
       {filteredRooms.length === 0 && !isLoading && !error && (
-        <div className="no-results">No rooms match your filters.</div>
+        <div className="no-results animate-fade-in">No rooms match your filters.</div>
       )}
-      {filteredRooms.map(room => (
-        <HomeBlock key={room._id} room={room} />
+      {!isLoading && filteredRooms.map((room, index) => (
+        <div key={room._id} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+          <HomeBlock room={room} />
+        </div>
       ))}
     </div>
   );
