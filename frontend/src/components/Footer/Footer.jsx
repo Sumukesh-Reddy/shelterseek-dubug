@@ -1,9 +1,9 @@
 import React from 'react';
 import './footer.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faMapMarkerAlt, 
-  faPhone, 
+import {
+  faMapMarkerAlt,
+  faPhone,
   faEnvelope
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -76,7 +76,7 @@ const Footer = () => {
 
       {/* Copyright Section */}
       <div className="footer-bottom">
-        <p>&copy; 2025 ShelterSeek Website. All rights reserved.</p>
+        <p>&copy; 2026 ShelterSeek Website. All rights reserved.</p>
       </div>
     </footer>
   );
