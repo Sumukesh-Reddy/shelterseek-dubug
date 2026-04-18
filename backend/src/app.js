@@ -145,12 +145,17 @@ app.use("/api/finance", financeRoutes);
 app.use("/api/payment", paymentRoutes);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  const { redisClient } = require('./middleware/cacheMiddleware');
+  const redisStatus = redisClient && redisClient.isReady ? 'Connected' : 'Disconnected';
+  
   res.status(200).json({ 
     success: true, 
-    message: 'Server is running', 
+    status: 'UP',
+    database: global.hostAdminConnection ? 'Connected' : 'Connecting...',
+    cache: redisStatus,
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: `${Math.floor(process.uptime())}s`
   });
 });
 
